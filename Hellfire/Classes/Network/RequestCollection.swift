@@ -10,14 +10,14 @@ import Foundation
 
 internal class RequestCollection {
 
-    //Class setup
+    //MARK: - Class setup
     
     init() {
         let queueLabel = "ThreadSafeMessageQueue." + String.randomString(length: 12)
         self.serialMessageQueue = DispatchQueue(label: queueLabel)
     }
 
-    //Private API
+    //MARK: - Private API
 
     //Queue used to ensure synchronous access to the 'requests' collection and the index 'taskIndex'
     private var serialMessageQueue: DispatchQueue
@@ -31,7 +31,7 @@ internal class RequestCollection {
     //Index of the tasks
     private var taskIndex = [RequestTaskIdentifier: TaskRequestPair]()
     
-    ///Internal API
+    //MARK: - Internal API
     
     internal func removeTask(forRequest request: URLRequest) {
         self.serialMessageQueue.sync {
@@ -61,5 +61,11 @@ internal class RequestCollection {
     internal func allTasks() -> [RequestTaskIdentifier] {
         let taskIdentifiers = self.taskIndex.compactMap { $0.key }
         return taskIdentifiers
+    }
+    
+    internal func task(forTaskIdentifier taskIdentifier: RequestTaskIdentifier) -> URLRequest? {
+        self.serialMessageQueue.sync {
+            return self.taskIndex[taskIdentifier]?.request
+        }
     }
 }

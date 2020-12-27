@@ -10,7 +10,7 @@ import Foundation
 
 public typealias StatusCode = Int
 
-public enum HTTPCode: Int, JSONSerializable {
+public enum HTTPCode: StatusCode, JSONSerializable {
     //2xx Success codes
     case ok = 200
     case created = 201
@@ -71,3 +71,13 @@ public enum HTTPCode: Int, JSONSerializable {
         return (statusCode == HTTPCode.userCancelledRequest.rawValue)
     }
 }
+
+//extension HTTPCode: CustomStringConvertible, CustomDebugStringConvertible {
+//    public var debugDescription: String {
+//        return "HTTPCode: \(self.rawValue)"
+//    }
+//
+//    public var description: String {
+//        return self.debugDescription
+//    }
+//}

@@ -66,10 +66,10 @@ class ViewController: UIViewController {
     }
 }
 
-extension ViewController: ServiceInterfaceSessionDelegate {
+extension ViewController: HellfireSessionDelegate {
     
     func headerCollection(forRequest dataRequest: NetworkRequest) -> [HTTPHeader]? {
-        let headers = [HTTPHeader.defaultUserAgent, HTTPHeader.defaultAcceptLanguage]
+        let headers = [HTTPHeader.defaultAcceptLanguage]
         return headers
     }
     

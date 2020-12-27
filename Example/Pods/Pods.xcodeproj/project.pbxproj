@@ -14,7 +14,7 @@
 		3448BA0061BBE1B22D540D12B7A3797F /* HTTPHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 414A7B5F9ABED958C018B27A102E1A40 /* HTTPHeader.swift */; };
 		3F8E9FA839F09CA37B0AD6B47E23C29D /* RequestCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 978D83404C15C8262901A91188B8D5A3 /* RequestCollection.swift */; };
 		49A98741013510E3B3D89B35DFB86095 /* RequestResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85D8124C25128864C7FA5E774ED11E5 /* RequestResult.swift */; };
-		529FEA5443B87F947E71FDCC7E4C02D3 /* ServiceInterfaceSessionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4FDC49B591C00CD5C991039EA32E6AC /* ServiceInterfaceSessionDelegate.swift */; };
+		529FEA5443B87F947E71FDCC7E4C02D3 /* HellfireSessionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4FDC49B591C00CD5C991039EA32E6AC /* HellfireSessionDelegate.swift */; };
 		5D253E6819DFEF91A8DB23E4CD781FFA /* ReachabilityStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BA84C3BAA21DADBF73959022D2BD818 /* ReachabilityStatus.swift */; };
 		6515FB76B177C50D7B9A9EBC7A1ECB69 /* Hellfire-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = F53A92D027EE0F9C258E693350D94BA2 /* Hellfire-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6BB894203209A86F97B75423FCFD3387 /* String+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = EED2F0CA9D2D89DD83582D1800A4D6B2 /* String+Extension.swift */; };
@@ -66,7 +66,7 @@
 		2AA0EE6D8914BFC11C35794419DFAB5A /* Hellfire-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Hellfire-prefix.pch"; sourceTree = "<group>"; };
 		3212113385A8FBBDB272BD23C409FF61 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.2.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		342A461F858E9A4E96425C01878BD1F2 /* DiskCache.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DiskCache.swift; sourceTree = "<group>"; };
-		34F9E912356AADE0F3608C1064B21EAF /* Hellfire.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Hellfire.framework; path = Hellfire.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		34F9E912356AADE0F3608C1064B21EAF /* Hellfire.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Hellfire.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		36F6A8BB7578B120506C02F901AA9540 /* Pods-Hellfire_Tests-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-Hellfire_Tests-acknowledgements.plist"; sourceTree = "<group>"; };
 		39288E93384647EA83ABA91CF7B7B81C /* ServiceInterface+SharedInstance.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "ServiceInterface+SharedInstance.swift"; sourceTree = "<group>"; };
 		414A7B5F9ABED958C018B27A102E1A40 /* HTTPHeader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HTTPHeader.swift; sourceTree = "<group>"; };
@@ -74,7 +74,7 @@
 		47E6C9206D375E7F5809651087E26341 /* Pods-Hellfire_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-Hellfire_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		48332641FCCECCBAA84544A83834ECA2 /* Pods-Hellfire_Example-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-Hellfire_Example-Info.plist"; sourceTree = "<group>"; };
 		4CE346FB03585AC407C08FD53213505C /* Pods-Hellfire_Example-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-Hellfire_Example-acknowledgements.plist"; sourceTree = "<group>"; };
-		4E63A15D1A547AFB43264070241C8769 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; path = LICENSE; sourceTree = "<group>"; };
+		4E63A15D1A547AFB43264070241C8769 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		4F3797E6E29312EB13A8E02AB9F8BC1B /* Pods-Hellfire_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-Hellfire_Example.release.xcconfig"; sourceTree = "<group>"; };
 		55F1ED319152C4DB7B9B1E3AC8E11BBB /* Hellfire.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Hellfire.release.xcconfig; sourceTree = "<group>"; };
 		66D289CE67B091E5E47C5B0CECC18EED /* CachePolicy.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CachePolicy.swift; sourceTree = "<group>"; };
@@ -84,26 +84,26 @@
 		7A8AFA5C6896FC2A74AFE586C9C3A193 /* Pods-Hellfire_Example-frameworks.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-Hellfire_Example-frameworks.sh"; sourceTree = "<group>"; };
 		80535F673CA9D6E0A11F888F0E9750FD /* Pods-Hellfire_Tests-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-Hellfire_Tests-umbrella.h"; sourceTree = "<group>"; };
 		830180C6618EC58D07AADB862FBD3F81 /* Pods-Hellfire_Tests-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-Hellfire_Tests-dummy.m"; sourceTree = "<group>"; };
-		90C4E3AC1C7358D26AD8A1C572D7C32F /* Hellfire.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; path = Hellfire.podspec; sourceTree = "<group>"; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		90C4E3AC1C7358D26AD8A1C572D7C32F /* Hellfire.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; path = Hellfire.podspec; sourceTree = "<group>"; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		91DB406C7C0A32AC5BAF87209CA013A5 /* Pods-Hellfire_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-Hellfire_Example.debug.xcconfig"; sourceTree = "<group>"; };
 		94C90EB06FC901B5E702AF0E4D32CAB0 /* HTTPMethod.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HTTPMethod.swift; sourceTree = "<group>"; };
 		978D83404C15C8262901A91188B8D5A3 /* RequestCollection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RequestCollection.swift; sourceTree = "<group>"; };
 		9BB4E3ACD2FD1A423BA552357F182B7E /* Pods-Hellfire_Example.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Pods-Hellfire_Example.modulemap"; sourceTree = "<group>"; };
 		9C84913B5F64ED2610ABCC633973B8D8 /* NetworkReachabilityManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NetworkReachabilityManager.swift; sourceTree = "<group>"; };
 		9D00E14A8E70F69B582A22E112C425D4 /* HTTPCode.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HTTPCode.swift; sourceTree = "<group>"; };
-		9D940727FF8FB9C785EB98E56350EF41 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
-		A755B1633169A7EEDBC0847C2B0D6895 /* Pods_Hellfire_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Pods_Hellfire_Tests.framework; path = "Pods-Hellfire_Tests.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9D940727FF8FB9C785EB98E56350EF41 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		A755B1633169A7EEDBC0847C2B0D6895 /* Pods_Hellfire_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Hellfire_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AFDB6FD64B8730454D6940B9DDC33FBA /* Pods-Hellfire_Example-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-Hellfire_Example-dummy.m"; sourceTree = "<group>"; };
 		B13B95174A7F6CF038E7981483F6FA15 /* JSONSerializable.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = JSONSerializable.swift; sourceTree = "<group>"; };
 		B5357E0E58B1E88ABD542F96FC6573FD /* FileManager+Extension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "FileManager+Extension.swift"; sourceTree = "<group>"; };
-		C4FDC49B591C00CD5C991039EA32E6AC /* ServiceInterfaceSessionDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ServiceInterfaceSessionDelegate.swift; sourceTree = "<group>"; };
-		CA309D13D10EBEE7BCB00ED7CD1F7E6B /* Pods_Hellfire_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Pods_Hellfire_Example.framework; path = "Pods-Hellfire_Example.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C4FDC49B591C00CD5C991039EA32E6AC /* HellfireSessionDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HellfireSessionDelegate.swift; sourceTree = "<group>"; };
+		CA309D13D10EBEE7BCB00ED7CD1F7E6B /* Pods_Hellfire_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Hellfire_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		CEFFABA64439A94C1283DD11D2685076 /* Hellfire.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Hellfire.debug.xcconfig; sourceTree = "<group>"; };
 		CFCBD15B023AF2F525B6C8058F4C6089 /* Pods-Hellfire_Tests-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-Hellfire_Tests-acknowledgements.markdown"; sourceTree = "<group>"; };
 		D63D8F9948216E3222B5BD810DE75697 /* NetworkResponse.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NetworkResponse.swift; sourceTree = "<group>"; };
 		D85D8124C25128864C7FA5E774ED11E5 /* RequestResult.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RequestResult.swift; sourceTree = "<group>"; };
 		D8F5D34C2C9A379FB9EAC8BFF4257622 /* MD5Hash.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MD5Hash.swift; sourceTree = "<group>"; };
-		DA85B54D2F361B610A15FC2BC2CE7F82 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; path = README.md; sourceTree = "<group>"; };
+		DA85B54D2F361B610A15FC2BC2CE7F82 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		DBA1859B0AFDE9CB5A116BFDC402FAEA /* Hellfire.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = Hellfire.modulemap; sourceTree = "<group>"; };
 		EA3A2E0370F6C4ED1A5ADDAEFF7C9239 /* Pods-Hellfire_Example-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-Hellfire_Example-umbrella.h"; sourceTree = "<group>"; };
 		EED2F0CA9D2D89DD83582D1800A4D6B2 /* String+Extension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "String+Extension.swift"; sourceTree = "<group>"; };
@@ -315,7 +315,7 @@
 			isa = PBXGroup;
 			children = (
 				B13B95174A7F6CF038E7981483F6FA15 /* JSONSerializable.swift */,
-				C4FDC49B591C00CD5C991039EA32E6AC /* ServiceInterfaceSessionDelegate.swift */,
+				C4FDC49B591C00CD5C991039EA32E6AC /* HellfireSessionDelegate.swift */,
 			);
 			name = Protocol;
 			path = Hellfire/Classes/Protocol;
@@ -485,7 +485,7 @@
 				C3B5CEFCF499F5E5A490EADCD45A369E /* ServiceError.swift in Sources */,
 				FCE281E2344130AB6F439394E91881E8 /* ServiceInterface+SharedInstance.swift in Sources */,
 				7EDE8F1E292998899A9CFEC16F5506E7 /* ServiceInterface.swift in Sources */,
-				529FEA5443B87F947E71FDCC7E4C02D3 /* ServiceInterfaceSessionDelegate.swift in Sources */,
+				529FEA5443B87F947E71FDCC7E4C02D3 /* HellfireSessionDelegate.swift in Sources */,
 				6BB894203209A86F97B75423FCFD3387 /* String+Extension.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -778,8 +778,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRIP_INSTALLED_PRODUCT = NO;
-				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_VERSION = 5.0;
 				SYMROOT = "${SRCROOT}/../build";
 			};

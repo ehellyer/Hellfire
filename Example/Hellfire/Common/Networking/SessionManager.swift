@@ -31,7 +31,7 @@ class SessionManager {
     }
 }
 
-extension SessionManager: ServiceInterfaceSessionDelegate {
+extension SessionManager: HellfireSessionDelegate {
 
     //Set the appropriate headers for dataRequest here.
     func headerCollection(forRequest dataRequest: NetworkRequest) -> [HTTPHeader]? {

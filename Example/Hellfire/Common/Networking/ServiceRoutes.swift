@@ -10,10 +10,8 @@ import Foundation
 
 struct ServiceRoutes {
     struct JSONPlaceholder {
-        ///Generate the auth and refresh token from the username and password.
         static let users = "users"
-        
-        ///Refresh the auth token from the refresh token.
         static let comments = "comments"
+
     }
 }
