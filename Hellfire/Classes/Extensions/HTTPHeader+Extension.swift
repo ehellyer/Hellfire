@@ -7,7 +7,7 @@
 //
 
 /*
-Header default code taken from Alamofire, because it was a really smart idea of theirs to default some of the more commonly used headers.
+Header default code based upon code taken from Alamofire.
 */
 
 import Foundation
