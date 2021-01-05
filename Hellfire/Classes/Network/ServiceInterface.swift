@@ -88,7 +88,7 @@ public class ServiceInterface: NSObject {
 
         let headers = self.headers(forRequest: request)
         headers.forEach({ (header) in
-            urlRequest.setValue(header.key, forHTTPHeaderField: header.value)
+            urlRequest.setValue(header.value, forHTTPHeaderField: header.key)
         })
         
         return urlRequest
