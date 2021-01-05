@@ -51,7 +51,7 @@ public class ServiceInterface: NSObject {
         //We decided we always want to have a value in statusCode.  This means that for non-service errors, we set the statusCode to negative values that are not recognized in the industry.
         let defaultStatusCode = (error == nil) ? HTTPCode.ok.rawValue : HTTPCode.generalError.rawValue
         var statusCode: Int = response?.statusCode ?? defaultStatusCode
-
+        
         if let _error = error as NSError?, HTTPCode.isOk(statusCode: statusCode) == false {
             if (_error.code == HTTPCode.userCancelledRequest.rawValue) {
                 statusCode = HTTPCode.userCancelledRequest.rawValue
@@ -63,10 +63,10 @@ public class ServiceInterface: NSObject {
                 statusCode = HTTPCode.hostNameNotFound.rawValue
             }
         }
-
+        
         return statusCode
     }
-
+    
     private func responseHeaders(_ response: HTTPURLResponse?) -> [HTTPHeader] {
         guard let headers = response?.allHeaderFields else { return [] }
         let httpHeaders = headers.compactMap { HTTPHeader(name: "\($0.key)", value: "\($0.value)") }
@@ -85,29 +85,18 @@ public class ServiceInterface: NSObject {
         urlRequest.httpMethod = request.method.name
         urlRequest.httpBody = request.body
         urlRequest.timeoutInterval = request.timeoutInterval
-
-        let headers = self.headers(forRequest: request)
-        headers.forEach({ (header) in
-            urlRequest.setValue(header.value, forHTTPHeaderField: header.key)
+        
+        //Set ContentType per request.
+        let contentTypeHeader = HTTPHeader.contentType(request.contentType)
+        urlRequest.setValue(contentTypeHeader.value, forHTTPHeaderField: contentTypeHeader.name)
+        
+        //Ask session delegate for additional headers or updates to headers for this request.
+        let appHeaders: [HTTPHeader] = self.sessionDelegate?.headerCollection(forRequest: request) ?? []
+        appHeaders.forEach({ (header) in
+            urlRequest.setValue(header.value, forHTTPHeaderField: header.name)
         })
         
         return urlRequest
-    }
-    
-    private func headers(forRequest request: NetworkRequest) -> [String: String] {
-        var headers = [String: String]()
-
-        //Set content type per request.
-        let contentTypeHeader = HTTPHeader.contentType(request.contentType)
-        headers[contentTypeHeader.name] = contentTypeHeader.value
-        
-        //Ask session delegate for any headers for this request.
-        let appHeaders: [HTTPHeader] = self.sessionDelegate?.headerCollection(forRequest: request) ?? []
-        appHeaders.forEach({ (header) in
-            headers[header.name] = header.value
-        })
-        
-        return headers
     }
     
     private func hasCachedResponse(forRequest request: NetworkRequest, completion: @escaping TaskResult) -> Bool {
@@ -206,20 +195,20 @@ public class ServiceInterface: NSObject {
     }
     
     public weak var sessionDelegate: HellfireSessionDelegate?
-
-//WIP - EJH
-//    /// Executes a background upload task for the `NetworkRequest` using a local `URL` as the source to be uploaded.
-//    /// - Parameters:
-//    ///   - request: The network request to be executed
-//    ///   - localURL: Local URL to the source that is to be uploaded.
-//    /// - Returns: `RequestTaskIdentifier` that identifies the underlying URLSessionDataTask.  This identifier can be used to cancel the network request.
-//    public func executeBackgroundUpload(_ request: NetworkRequest, localURL: URL) -> RequestTaskIdentifier? {
-//        let urlRequest = self.urlRequest(fromNetworkRequest: request)
-//        let task = self.backgroundSession.uploadTask(with: urlRequest, fromFile: localURL)
-//        self.requestCollection.add(request: urlRequest, task: task)
-//        task.resume()
-//        return task.taskIdentifier
-//    }
+    
+    //WIP - EJH
+    //    /// Executes a background upload task for the `NetworkRequest` using a local `URL` as the source to be uploaded.
+    //    /// - Parameters:
+    //    ///   - request: The network request to be executed
+    //    ///   - localURL: Local URL to the source that is to be uploaded.
+    //    /// - Returns: `RequestTaskIdentifier` that identifies the underlying URLSessionDataTask.  This identifier can be used to cancel the network request.
+    //    public func executeBackgroundUpload(_ request: NetworkRequest, localURL: URL) -> RequestTaskIdentifier? {
+    //        let urlRequest = self.urlRequest(fromNetworkRequest: request)
+    //        let task = self.backgroundSession.uploadTask(with: urlRequest, fromFile: localURL)
+    //        self.requestCollection.add(request: urlRequest, task: task)
+    //        task.resume()
+    //        return task.taskIdentifier
+    //    }
     
     /// Executes a background upload task for the `NetworkRequest` using a local `URL` as the source to be uploaded.
     /// - Parameters:
@@ -234,13 +223,13 @@ public class ServiceInterface: NSObject {
             guard let strongSelf = self else { return }
             strongSelf.taskResponseHandler(request: _request, urlRequest: urlRequest, completion: completion, data: data, response: response, error: error)
         }
-
+        
         self.requestCollection.add(request: urlRequest, task: task)
         task.resume()
-
+        
         return task.taskIdentifier
     }
-
+    
     ///Executes the network request asynchronously as a `URLSessionDataTask`, intended to be a relatively short request.
     ///Cached and network responses are called back by dispatching to the main thread and calling the completion block.  For cached responses, the network response object will have a response header added with the name `CachedResponse` with a value of `true`.
     ///A `RequestTaskIdentifier` is returned for a NetworkRequest that is dispatched to URL session.  This identifier can be used to cancel the network request.
@@ -294,7 +283,7 @@ public class ServiceInterface: NSObject {
 }
 
 extension ServiceInterface: URLSessionTaskDelegate {
- 
+    
     public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         DispatchQueue.main.async { [weak self] in
             guard let strongSelf = self,
@@ -317,3 +306,4 @@ extension ServiceInterface: URLSessionTaskDelegate {
         }
     }
 }
+
