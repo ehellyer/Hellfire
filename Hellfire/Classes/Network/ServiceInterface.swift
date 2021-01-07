@@ -217,7 +217,7 @@ public class ServiceInterface: NSObject {
     ///   - completion: The completion function to be called with the response.
     /// - Returns:`RequestTaskIdentifier` that identifies the underlying URLSessionDataTask.  This identifier can be used to cancel the network request.
     public func executeBackgroundUpload(_ request: NetworkRequest, localURL: URL, completion: @escaping TaskResult) -> RequestTaskIdentifier? {
-        let _request = NetworkRequest.noCacheRequest(fromRequest: request)
+        let _request = NetworkRequest.uploadRequest(fromRequest: request)
         let urlRequest = self.urlRequest(fromNetworkRequest: _request)
         let task = self.backgroundSession.uploadTask(with: urlRequest, fromFile: localURL) { [weak self] (data, response, error) in
             guard let strongSelf = self else { return }
