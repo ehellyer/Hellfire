@@ -16,13 +16,13 @@ public struct NetworkRequest {
     ///   - url: Sets the url for the request.
     ///   - method: Sets the HTTP method for the request.
     ///   - cachePolicyType: Sets the CachePolicyType to be used on the response.  Default value is .doNotCache
-    ///   - timeoutInterval: Sets the connection timeout for the request in seconds.  Default value is 60 seconds.
+    ///   - timeoutInterval: Sets the connection timeout for the request in seconds.  Default value is 30 seconds.
     ///   - body: Sets the Request http body.   Default value is nil.
     ///   - contentType: Sets the content type of the request body.   Default value is `application/json`
     public init(url: URL,
                 method: HTTPMethod,
                 cachePolicyType: CachePolicyType = .doNotCache,
-                timeoutInterval: TimeInterval = TimeInterval(60),
+                timeoutInterval: TimeInterval = TimeInterval(30),
                 body: Data? = nil,
                 contentType: String = "application/json") {
         self.url = url
@@ -42,7 +42,7 @@ public struct NetworkRequest {
     /// Gets the CachePolicyType to be used on the response.  Default value is .doNotCache
     public let cachePolicyType: CachePolicyType
     
-    /// Gets the connection timeout for the request in seconds.  Default value is 60 seconds.
+    /// Gets the connection timeout for the request in seconds.  Default value is 30 seconds.
     public let timeoutInterval: TimeInterval
     
     /// Gets the Request http body.   Default value is nil.
