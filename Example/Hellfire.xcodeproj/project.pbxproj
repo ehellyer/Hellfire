@@ -15,6 +15,7 @@
 		638DBF0D51DB27AB9D43C0B7 /* Pods_Hellfire_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A4FFB9024C4DA46F04A59C2E /* Pods_Hellfire_Example.framework */; };
 		EB5CF0B625B6634700695492 /* Murphy.jpg in Resources */ = {isa = PBXBuildFile; fileRef = EB5CF0B525B6634700695492 /* Murphy.jpg */; };
 		EB5CF0BD25B6668300695492 /* BaseTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB5CF0BC25B6668300695492 /* BaseTestCase.swift */; };
+		EB5CF0CC25B6759300695492 /* Murphy.jpg in Resources */ = {isa = PBXBuildFile; fileRef = EB5CF0B525B6634700695492 /* Murphy.jpg */; };
 		EBBC81CD24A054D900F68777 /* WebServiceResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBBC81BB24A054D900F68777 /* WebServiceResolver.swift */; };
 		EBBC81CE24A054D900F68777 /* ServiceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBBC81BC24A054D900F68777 /* ServiceConfig.swift */; };
 		EBBC81CF24A054D900F68777 /* ServiceHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBBC81BD24A054D900F68777 /* ServiceHost.swift */; };
@@ -383,6 +384,7 @@
 			files = (
 				607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */,
 				607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */,
+				EB5CF0CC25B6759300695492 /* Murphy.jpg in Resources */,
 				607FACDD1AFB9204008FA782 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

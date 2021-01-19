@@ -40,4 +40,6 @@ public enum HellfireError: Error {
     
     /// Multipart form encoding failed.
     case multipartEncodingFailed(reason: MultipartEncodingFailureReason)
+    
+    public static let userCancelled = NSURLErrorCancelled
 }

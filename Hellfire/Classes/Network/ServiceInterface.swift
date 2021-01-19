@@ -213,21 +213,21 @@ public class ServiceInterface: NSObject {
         return task.taskIdentifier
     }
     
-    /// Executes a background upload task for the `NetworkRequest` using a local `URL` as the source to be uploaded.  The upload task is created on the data task session and as such is not handled by the OS.  Meaning this task cannot run as a background process.
-    /// - Parameters:
-    ///   - request: The network request to be executed
-    ///   - localURL: Local URL to the source that is to be uploaded.
-    ///   - completion: The completion function to be called with the response.
-    /// - Returns:`RequestTaskIdentifier` that identifies the underlying URLSessionDataTask.  This identifier can be used to cancel the network request.
-    public func executeBackgroundUpload(_ request: NetworkRequest, localURL: URL, completion: @escaping TaskResult) -> RequestTaskIdentifier? {
-        let _request = NetworkRequest.uploadRequest(fromRequest: request)
-        let urlRequest = self.urlRequest(fromNetworkRequest: _request)
-        let task = self.dataTaskSession.uploadTask(with: urlRequest, fromFile: localURL) { [weak self] (data, response, error) in
-            guard let strongSelf = self else { return }
-            strongSelf.taskResponseHandler(request: _request, urlRequest: urlRequest, completion: completion, data: data, response: response, error: error)
+
+    public func executeUpload(_ request: MultipartRequest) -> RequestTaskIdentifier? {
+        guard let urlRequest = try? request.build() else {
+//            completion(.failure(ServiceError(request: <#T##URLRequest#>, error: <#T##Error?#>, statusCode: <#T##StatusCode#>, responseBody: <#T##Data?#>, userCancelledRequest: <#T##Bool#>)))
+            return nil
         }
         
-        self.requestCollection.add(request: urlRequest, task: task)
+        let task = self.backgroundSession.uploadTask(withStreamedRequest: urlRequest)
+        
+//        { [weak self] (data, response, error) in
+//            guard let strongSelf = self else { return }
+//            strongSelf.taskResponseHandler(request: _request, urlRequest: urlRequest, completion: completion, data: data, response: response, error: error)
+//        }
+//
+//        self.requestCollection.add(request: urlRequest, task: task)
         task.resume()
         
         return task.taskIdentifier
