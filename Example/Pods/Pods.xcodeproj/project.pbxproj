@@ -33,6 +33,11 @@
 		DFBA464759251C29BB3000EB9FE3D48A /* JSONSerializable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B13B95174A7F6CF038E7981483F6FA15 /* JSONSerializable.swift */; };
 		E0B11AE62D44049E672AA59645B8778A /* Pods-Hellfire_Tests-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 830180C6618EC58D07AADB862FBD3F81 /* Pods-Hellfire_Tests-dummy.m */; };
 		E0C9A570A3E9EE8F2AB0BA8D5A9D089A /* CachePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66D289CE67B091E5E47C5B0CECC18EED /* CachePolicy.swift */; };
+		EBEB168825AD2540008AE2DC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBEB168725AD2540008AE2DC /* AppDelegate.swift */; };
+		EBEB168D25B0F1B1008AE2DC /* MultipartFormData.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBEB168C25B0F1B1008AE2DC /* MultipartFormData.swift */; };
+		EBEB169225B0F72F008AE2DC /* MultipartRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBEB169125B0F72F008AE2DC /* MultipartRequest.swift */; };
+		EBEB16A125B10F3C008AE2DC /* EncodingHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBEB16A025B10F3C008AE2DC /* EncodingHelper.swift */; };
+		EBEB16A625B125C9008AE2DC /* HellfireError.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBEB16A525B125C9008AE2DC /* HellfireError.swift */; };
 		F89EE5EC9D8A56D1D37165F43D77FFDA /* DiskCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 342A461F858E9A4E96425C01878BD1F2 /* DiskCache.swift */; };
 		FA4BA87A452E93B2122653D9CD239BA8 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3212113385A8FBBDB272BD23C409FF61 /* Foundation.framework */; };
 		FAE2928FB6B9A073127D1DC92E8361DB /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3212113385A8FBBDB272BD23C409FF61 /* Foundation.framework */; };
@@ -106,6 +111,11 @@
 		DA85B54D2F361B610A15FC2BC2CE7F82 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		DBA1859B0AFDE9CB5A116BFDC402FAEA /* Hellfire.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = Hellfire.modulemap; sourceTree = "<group>"; };
 		EA3A2E0370F6C4ED1A5ADDAEFF7C9239 /* Pods-Hellfire_Example-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-Hellfire_Example-umbrella.h"; sourceTree = "<group>"; };
+		EBEB168725AD2540008AE2DC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		EBEB168C25B0F1B1008AE2DC /* MultipartFormData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipartFormData.swift; sourceTree = "<group>"; };
+		EBEB169125B0F72F008AE2DC /* MultipartRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipartRequest.swift; sourceTree = "<group>"; };
+		EBEB16A025B10F3C008AE2DC /* EncodingHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodingHelper.swift; sourceTree = "<group>"; };
+		EBEB16A525B125C9008AE2DC /* HellfireError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HellfireError.swift; sourceTree = "<group>"; };
 		EED2F0CA9D2D89DD83582D1800A4D6B2 /* String+Extension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "String+Extension.swift"; sourceTree = "<group>"; };
 		F10686A184680033C4F9EAC0BE8A1655 /* Pods-Hellfire_Example-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-Hellfire_Example-acknowledgements.markdown"; sourceTree = "<group>"; };
 		F53A92D027EE0F9C258E693350D94BA2 /* Hellfire-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Hellfire-umbrella.h"; sourceTree = "<group>"; };
@@ -287,9 +297,14 @@
 		D1EBEAB50555484F086437C5B0269256 /* Network */ = {
 			isa = PBXGroup;
 			children = (
+				EBEB168725AD2540008AE2DC /* AppDelegate.swift */,
+				EBEB16A025B10F3C008AE2DC /* EncodingHelper.swift */,
+				EBEB16A525B125C9008AE2DC /* HellfireError.swift */,
 				9D00E14A8E70F69B582A22E112C425D4 /* HTTPCode.swift */,
 				414A7B5F9ABED958C018B27A102E1A40 /* HTTPHeader.swift */,
 				94C90EB06FC901B5E702AF0E4D32CAB0 /* HTTPMethod.swift */,
+				EBEB168C25B0F1B1008AE2DC /* MultipartFormData.swift */,
+				EBEB169125B0F72F008AE2DC /* MultipartRequest.swift */,
 				9C84913B5F64ED2610ABCC633973B8D8 /* NetworkReachabilityManager.swift */,
 				11D546384E9E2A430BD5C3D55898D733 /* NetworkRequest.swift */,
 				D63D8F9948216E3222B5BD810DE75697 /* NetworkResponse.swift */,
@@ -473,6 +488,7 @@
 				B57B91969A8A9A85A5A685D387BD6CCF /* HTTPCode.swift in Sources */,
 				B931708B86CF868CB658A5E19B2A9DA3 /* HTTPHeader+Extension.swift in Sources */,
 				3448BA0061BBE1B22D540D12B7A3797F /* HTTPHeader.swift in Sources */,
+				EBEB16A125B10F3C008AE2DC /* EncodingHelper.swift in Sources */,
 				117054CFF72A640E952FCB8049781623 /* HTTPMethod.swift in Sources */,
 				DFBA464759251C29BB3000EB9FE3D48A /* JSONSerializable.swift in Sources */,
 				31916F85F3FF7547CCEA77F0BD7978A0 /* MD5Hash.swift in Sources */,
@@ -481,12 +497,16 @@
 				C4526E1DF4014E1EE27A4C5F419D2FC9 /* NetworkResponse.swift in Sources */,
 				5D253E6819DFEF91A8DB23E4CD781FFA /* ReachabilityStatus.swift in Sources */,
 				3F8E9FA839F09CA37B0AD6B47E23C29D /* RequestCollection.swift in Sources */,
+				EBEB16A625B125C9008AE2DC /* HellfireError.swift in Sources */,
+				EBEB169225B0F72F008AE2DC /* MultipartRequest.swift in Sources */,
 				49A98741013510E3B3D89B35DFB86095 /* RequestResult.swift in Sources */,
 				C3B5CEFCF499F5E5A490EADCD45A369E /* ServiceError.swift in Sources */,
+				EBEB168D25B0F1B1008AE2DC /* MultipartFormData.swift in Sources */,
 				FCE281E2344130AB6F439394E91881E8 /* ServiceInterface+SharedInstance.swift in Sources */,
 				7EDE8F1E292998899A9CFEC16F5506E7 /* ServiceInterface.swift in Sources */,
 				529FEA5443B87F947E71FDCC7E4C02D3 /* HellfireSessionDelegate.swift in Sources */,
 				6BB894203209A86F97B75423FCFD3387 /* String+Extension.swift in Sources */,
+				EBEB168825AD2540008AE2DC /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

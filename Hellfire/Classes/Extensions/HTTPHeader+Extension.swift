@@ -98,6 +98,21 @@ extension HTTPHeader {
     public static func userAgent(_ value: String) -> HTTPHeader {
         HTTPHeader(name: "User-Agent", value: value)
     }
+
+    ///Returns the header as a string as used by a request.
+    public var stringEncoding: String {
+        return "\(self.name): \(self.value)"
+    }
+}
+
+extension HTTPHeader: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(name)
+    }
+    
+    public static func == (lhs: HTTPHeader, rhs: HTTPHeader) -> Bool {
+        return lhs.name == rhs.name
+    }
 }
 
 extension HTTPHeader: CustomStringConvertible, CustomDebugStringConvertible {

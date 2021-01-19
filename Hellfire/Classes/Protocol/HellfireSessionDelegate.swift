@@ -100,7 +100,8 @@ public protocol HellfireSessionDelegate: class {
     
 }
 
-//Empty private protocol extension to make protocol methods optional for the delegate.
+//Protocol extension that enables default action for protocol implementation when the delegate does not implement them.
+//Thus making the protocol methods optional for the delegate.
 public extension HellfireSessionDelegate {
     
     func headerCollection(forRequest dataRequest: NetworkRequest) -> [HTTPHeader]? { return nil }

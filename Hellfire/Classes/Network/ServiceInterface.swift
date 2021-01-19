@@ -23,6 +23,7 @@ public class ServiceInterface: NSObject {
     private var privateReachabilityHost: String?
     private lazy var requestCollection = RequestCollection()
     private lazy var diskCache = DiskCache()
+    private lazy var backgroundSessionIdentifier: String = "Hellfire.BackgroundUrlSession"
     private lazy var dataTaskSession: URLSession = {
         let configuration = URLSessionConfiguration.default
         configuration.httpAdditionalHeaders = self.defaultRequestHeaders
@@ -30,15 +31,17 @@ public class ServiceInterface: NSObject {
         return urlSession
     }()
     private lazy var backgroundSession: URLSession = {
-        let info = Bundle.main.infoDictionary
-        let bundle = info?[kCFBundleIdentifierKey as String] as? String ?? "Hellfire"
-        let sessionIdentifier = "\(bundle + String.randomString(length: 10)).HellfireBackgroundSession"
-        let configuration = URLSessionConfiguration.background(withIdentifier: sessionIdentifier)
+        let operationQueue = OperationQueue()
+        operationQueue.maxConcurrentOperationCount = 1
+        operationQueue.qualityOfService = .utility
+
+        let configuration = URLSessionConfiguration.background(withIdentifier: self.backgroundSessionIdentifier)
         configuration.httpAdditionalHeaders = self.defaultRequestHeaders
-        configuration.sessionSendsLaunchEvents = false
+        configuration.sessionSendsLaunchEvents = true
+        configuration.shouldUseExtendedBackgroundIdleMode = true
         //configuration.timeoutIntervalForRequest = {For now using default - 60 seconds}
         //configuration.timeoutIntervalForResource = {For now using default - 7 days}
-        let urlSession = URLSession(configuration: configuration, delegate: self, delegateQueue: nil)
+        let urlSession = URLSession(configuration: configuration, delegate: self, delegateQueue: operationQueue)
         return urlSession
     }()
     private lazy var defaultRequestHeaders: [AnyHashable: Any] = {
@@ -58,7 +61,6 @@ public class ServiceInterface: NSObject {
             (error as NSError?)?.code ??
             //We should never get to this last option.  But if there was no statusCode from the response and there was no error instance, we are defaulting to HTTP.ok
             HTTPCode.ok.rawValue
-        
         return statusCode
     }
     
@@ -165,6 +167,7 @@ public class ServiceInterface: NSObject {
         #endif
     }
 
+    
     //TODO: Finish the injection of this configuration.
 //    public init(backgroundSessionConfiguration: URLSessionConfiguration) {
 //        self.backgroundSession.configuration = backgroundSessionConfiguration

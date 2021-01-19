@@ -22,6 +22,7 @@ class ViewController: UIViewController {
         return si
     }
     private lazy var webServiceResolver = WebServiceResolver()
+
     
     private func fetchPosts() {
 

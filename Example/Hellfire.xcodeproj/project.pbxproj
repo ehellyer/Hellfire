@@ -13,6 +13,8 @@
 		607FACDD1AFB9204008FA782 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDC1AFB9204008FA782 /* Images.xcassets */; };
 		607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDE1AFB9204008FA782 /* LaunchScreen.xib */; };
 		638DBF0D51DB27AB9D43C0B7 /* Pods_Hellfire_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A4FFB9024C4DA46F04A59C2E /* Pods_Hellfire_Example.framework */; };
+		EB5CF0B625B6634700695492 /* Murphy.jpg in Resources */ = {isa = PBXBuildFile; fileRef = EB5CF0B525B6634700695492 /* Murphy.jpg */; };
+		EB5CF0BD25B6668300695492 /* BaseTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB5CF0BC25B6668300695492 /* BaseTestCase.swift */; };
 		EBBC81CD24A054D900F68777 /* WebServiceResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBBC81BB24A054D900F68777 /* WebServiceResolver.swift */; };
 		EBBC81CE24A054D900F68777 /* ServiceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBBC81BC24A054D900F68777 /* ServiceConfig.swift */; };
 		EBBC81CF24A054D900F68777 /* ServiceHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBBC81BD24A054D900F68777 /* ServiceHost.swift */; };
@@ -53,7 +55,6 @@
 /* Begin PBXFileReference section */
 		10534D56CBCB22EEA704FADD /* Pods_Hellfire_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Hellfire_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		16ECA27CD6903E5D1AF2DA33 /* Pods-Hellfire_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Hellfire_Example.release.xcconfig"; path = "Pods/Target Support Files/Pods-Hellfire_Example/Pods-Hellfire_Example.release.xcconfig"; sourceTree = "<group>"; };
-		41788DC1EB08577DE20C326E /* Pods-HellFire_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HellFire_Example.debug.xcconfig"; path = "Pods/Target Support Files/Pods-HellFire_Example/Pods-HellFire_Example.debug.xcconfig"; sourceTree = "<group>"; };
 		607FACD01AFB9204008FA782 /* Hellfire_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Hellfire_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACD41AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		607FACD51AFB9204008FA782 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -72,8 +73,9 @@
 		81E3E85AA8FCA11A5B5122AB /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
 		A4FFB9024C4DA46F04A59C2E /* Pods_Hellfire_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Hellfire_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		ABE72D0E5A60E0327AA248CF /* Pods-Hellfire_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Hellfire_Tests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Hellfire_Tests/Pods-Hellfire_Tests.debug.xcconfig"; sourceTree = "<group>"; };
-		D2C4D72B3969E656F70BFEFF /* Pods-HellFire_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HellFire_Tests.release.xcconfig"; path = "Pods/Target Support Files/Pods-HellFire_Tests/Pods-HellFire_Tests.release.xcconfig"; sourceTree = "<group>"; };
 		E31292A8A96913E5038A91F1 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
+		EB5CF0B525B6634700695492 /* Murphy.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Murphy.jpg; sourceTree = "<group>"; };
+		EB5CF0BC25B6668300695492 /* BaseTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseTestCase.swift; sourceTree = "<group>"; };
 		EBBC81BB24A054D900F68777 /* WebServiceResolver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebServiceResolver.swift; sourceTree = "<group>"; };
 		EBBC81BC24A054D900F68777 /* ServiceConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServiceConfig.swift; sourceTree = "<group>"; };
 		EBBC81BD24A054D900F68777 /* ServiceHost.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServiceHost.swift; sourceTree = "<group>"; };
@@ -91,8 +93,6 @@
 		EBBC81CB24A054D900F68777 /* AppNotificationKeys.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppNotificationKeys.swift; sourceTree = "<group>"; };
 		EBBC81CC24A054D900F68777 /* AppUserKeys.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppUserKeys.swift; sourceTree = "<group>"; };
 		EBD5703A23306D8E001DCC6D /* TheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TheTests.swift; sourceTree = "<group>"; };
-		F33D0FCCEE44D0FE972B9DB8 /* Pods-HellFire_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HellFire_Tests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-HellFire_Tests/Pods-HellFire_Tests.debug.xcconfig"; sourceTree = "<group>"; };
-		F935F020A47D8B2F70960137 /* Pods-HellFire_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HellFire_Example.release.xcconfig"; path = "Pods/Target Support Files/Pods-HellFire_Example/Pods-HellFire_Example.release.xcconfig"; sourceTree = "<group>"; };
 		FE687B9F29A74FC16164EAE3 /* Pods-Hellfire_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Hellfire_Tests.release.xcconfig"; path = "Pods/Target Support Files/Pods-Hellfire_Tests/Pods-Hellfire_Tests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -174,8 +174,9 @@
 		607FACE81AFB9204008FA782 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				EB5CF0BB25B6667000695492 /* Tests */,
+				EB5CF0B425B6630100695492 /* Resources */,
 				607FACE91AFB9204008FA782 /* Supporting Files */,
-				EBD5703A23306D8E001DCC6D /* TheTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -219,16 +220,29 @@
 		8A029246D60629A62513321D /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				41788DC1EB08577DE20C326E /* Pods-HellFire_Example.debug.xcconfig */,
-				F935F020A47D8B2F70960137 /* Pods-HellFire_Example.release.xcconfig */,
-				F33D0FCCEE44D0FE972B9DB8 /* Pods-HellFire_Tests.debug.xcconfig */,
-				D2C4D72B3969E656F70BFEFF /* Pods-HellFire_Tests.release.xcconfig */,
 				795769AC49044468BDB68734 /* Pods-Hellfire_Example.debug.xcconfig */,
 				16ECA27CD6903E5D1AF2DA33 /* Pods-Hellfire_Example.release.xcconfig */,
 				ABE72D0E5A60E0327AA248CF /* Pods-Hellfire_Tests.debug.xcconfig */,
 				FE687B9F29A74FC16164EAE3 /* Pods-Hellfire_Tests.release.xcconfig */,
 			);
 			name = Pods;
+			sourceTree = "<group>";
+		};
+		EB5CF0B425B6630100695492 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				EB5CF0B525B6634700695492 /* Murphy.jpg */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		EB5CF0BB25B6667000695492 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				EB5CF0BC25B6668300695492 /* BaseTestCase.swift */,
+				EBD5703A23306D8E001DCC6D /* TheTests.swift */,
+			);
+			name = Tests;
 			sourceTree = "<group>";
 		};
 		EBBC81B924A054D900F68777 /* Common */ = {
@@ -377,6 +391,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EB5CF0B625B6634700695492 /* Murphy.jpg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -491,6 +506,7 @@
 				EBBC81DD24A0555A00F68777 /* Address.swift in Sources */,
 				EBBC81E124A0555A00F68777 /* User.swift in Sources */,
 				EBD5703B23306D8E001DCC6D /* TheTests.swift in Sources */,
+				EB5CF0BD25B6668300695492 /* BaseTestCase.swift in Sources */,
 				EBBC81DF24A0555A00F68777 /* Person.swift in Sources */,
 				EBBC81E224A0555A00F68777 /* Post.swift in Sources */,
 				EBBC81DE24A0555A00F68777 /* Birthday.swift in Sources */,

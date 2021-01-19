@@ -6,55 +6,59 @@
 //  Copyright © 2019 CocoaPods. All rights reserved.
 //
 
+import Hellfire
 import XCTest
 
-class TheTests: XCTestCase {
+class TheTests: BaseTestCase {
     
-    //private let hasher = MD5Hash()
-    
-    override func setUp() {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-    }
 
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
+    func testMultipartFormDataUpload() {
+        //Build the request
+        let url = URL(string: "https://httpbin.org/post")!
+        let fileURL = self.url(forResource: "Murphy", withExtension: "jpg")
 
-    func testHasher() {
+        let mpfd = MultipartFormData()
+        mpfd.append("This is a comment".data(using: .utf8)!, withName: "Metadata.AttachmentComment")
+        mpfd.append("\(9)".data(using: .utf8)!, withName: "Metadata.AttachmentSource") //9 - LoopNet
+        mpfd.append("\(4)".data(using: .utf8)!, withName: "Metadata.AttachmentType") //4 - BuildingPhoto
+        mpfd.append("\(6)".data(using: .utf8)!, withName: "Metadata.AttachmentTypeExtension") //6 - JPG
+        mpfd.append(true.description.data(using: .utf8)!, withName: "Metadata.IsPublished")
+        mpfd.append(true.description.data(using: .utf8)!, withName: "Metadata.IsMarketingPublished")
+        mpfd.append("\(3910450)".data(using: .utf8)!, withName: "Metadata.OriginiatedByContactId")
+        mpfd.append("\(800)".data(using: .utf8)!, withName: "Metadata.ImageWidthInPixels")
+        mpfd.append("\(600)".data(using: .utf8)!, withName: "Metadata.ImageHeightInPixels")
+        mpfd.append(fileURL, withName: "File")
+        let request = MultipartRequest(url: url, method: .post, multipartFormData: mpfd, isInBackgroundSession: false)
 
-//        var bigDic = Dictionary<String, String>()
-//
-//        for _ in 1...10000 {
-//            let strLength = Int(arc4random_uniform(21) + 50)
-//            let seedStr = String.randomString(length: strLength)
-//            bigDic[seedStr] = self.hasher.MD5(seedStr)
-//        }
-//
-//        //Test repeatable hash values
-//        for key in bigDic.keys {
-//            let value = bigDic[key]
-//            let compartStr = self.hasher.MD5(key)
-//            print("\(value!)  ==  \(compartStr)        Key: \(key)")
-//            XCTAssert(value == compartStr)
-//        }
-//
-//        //Test for uniqueness
-//        let set = Set<String>(bigDic.values)
-//
-//        print(set.count)
-//        print(bigDic.count)
-        
-    }
-
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
+        guard let bodyData = try? request.build().httpBody else {
+            XCTFail()
+            return
         }
+        
+        guard let bodyString = NSString(data: bodyData, encoding: 4) else {
+            XCTFail()
+            return
+        }
+        
+        print(bodyString)
+        
+//        //Make the call
+//        let _ = self.serviceInterface.execute(request) { (result) in
+//            switch result {
+//            case .failure(let serviceError):
+//                print("Service error occured \(serviceError.error?.localizedDescription ?? "No error description")")
+//            case .success(let dataResponse):
+//                if let t = [Post].initialize(jsonData: dataResponse.body) {
+//                    print("Item Count: \(t.count)")
+//                    print(t[0])
+//                }
+//            }
+//        }
     }
+
 
     //Mark: - Service Tests
-    func testPerson() {
+    func testSerializerPerson() {
         let jsonStr = """
         {
         "first_Name": "Edward",
@@ -75,28 +79,27 @@ class TheTests: XCTestCase {
         XCTAssertEqual("Hello, World!", "Hello, World!")
     }
     
-    func testBirthday1() {
-        let jsonStr = """
-        {
-        "birthdate": "1975-03-21"
-        }
-        """
-        self.printBirthdate(jsonStr: jsonStr)
-    }
-
-    func testBirthday2() {
-        let jsonStr = """
-        {
-        "birthdate": "2004-03-09"
-        }
-        """
-        self.printBirthdate(jsonStr: jsonStr)
-    }
-    
-    private func printBirthdate(jsonStr: String) {
-        let jsonData = Data(jsonStr.utf8)
-        if let bday = Birthday.initialize(jsonData: jsonData) {
-            print(bday.birthdate)
-        }
-    }
+//    func testSerializerBirthday1() {
+//        let jsonStr = """
+//        {
+//        "birthdate": "1975-03-21"
+//        }
+//        """
+//        let jsonData = Data(jsonStr.utf8)
+//        let bday = Birthday.initialize(jsonData: jsonData)
+//
+//        XCTAssert(bday != nil, "Date string was not recognized.")
+//    }
+//
+//    func testSerializerBirthday2() {
+//        let jsonStr = """
+//        {
+//        "birthdate": "2004-03-09"
+//        }
+//        """
+//        let jsonData = Data(jsonStr.utf8)
+//        let bday = Birthday.initialize(jsonData: jsonData)
+//
+//        XCTAssert(bday != nil, "Date string was not recognized.")
+//    }
 }
