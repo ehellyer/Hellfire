@@ -32,12 +32,13 @@ public class ServiceInterface: NSObject {
     }()
     private lazy var backgroundSession: URLSession = {
         let operationQueue = OperationQueue()
-        operationQueue.maxConcurrentOperationCount = 1
-        operationQueue.qualityOfService = .utility
+        operationQueue.maxConcurrentOperationCount = OperationQueue.defaultMaxConcurrentOperationCount
+        operationQueue.qualityOfService = .userInteractive
 
         let configuration = URLSessionConfiguration.background(withIdentifier: self.backgroundSessionIdentifier)
         configuration.httpAdditionalHeaders = self.defaultRequestHeaders
         configuration.sessionSendsLaunchEvents = true
+        configuration.isDiscretionary = false
         configuration.shouldUseExtendedBackgroundIdleMode = true
         //configuration.timeoutIntervalForRequest = {For now using default - 60 seconds}
         //configuration.timeoutIntervalForResource = {For now using default - 7 days}
@@ -320,24 +321,58 @@ extension ServiceInterface: URLSessionDataDelegate {
     }
 }
 
+
+//MARK: - URLSessionTaskDelegate protocol
+extension ServiceInterface: URLSessionTaskDelegate {
+    
+    //Handles task specific challenges.  e.g. Username/Password
+    public func urlSession(_ session: URLSession,
+                           task: URLSessionTask,
+                           didReceive challenge: URLAuthenticationChallenge,
+                           completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        completionHandler(.performDefaultHandling, nil)
+        print("============================ Task auth challenge delegate callback ============================ ")
+        if challenge.previousFailureCount > 0 {
+            completionHandler(.cancelAuthenticationChallenge, nil)
+        } else {
+            completionHandler(.performDefaultHandling, nil)
+        }
+    }
+}
+
+
 //MARK: - URLSessionDelegate protocol
 extension ServiceInterface: URLSessionDelegate {
     
     public func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
         DispatchQueue.main.async { [weak self] in
+            //Need to call the saved completion handler.
             self?.sessionDelegate?.backgroundSessionDidFinishEvents(session: session)
         }
+        
+//        DispatchQueue.main.async {
+//            guard let appDelegate = UIApplication.shared.delegate as? AppDelegate,
+//                  let backgroundCompletionHandler =
+//                    appDelegate.backgroundCompletionHandler else {
+//                return
+//            }
+//            backgroundCompletionHandler()
+//        }
     }
-    
-    public func urlSession(_ session: URLSession,
-                           didReceive challenge: URLAuthenticationChallenge,
-                           completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        self.sessionDelegate?.session(session, didReceive: challenge, completionHandler: completionHandler)
-    }
-    
+
     public func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
         self.sessionDelegate?.session(session, didBecomeInvalidWithError: error)
     }
+
+    //Handles session wide challenges.  e.g. TLS validation
+    public func urlSession(_ session: URLSession,
+                           didReceive challenge: URLAuthenticationChallenge,
+                           completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        print("============================  Session auth challenge delegate callback ============================ ")
+        if challenge.previousFailureCount > 0 {
+            completionHandler(.cancelAuthenticationChallenge, nil)
+        } else {
+            completionHandler(.performDefaultHandling, nil)
+        }
+    }
 }
-
-

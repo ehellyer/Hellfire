@@ -36,7 +36,7 @@ public protocol JSONSerializable: Codable {
     ///Serializes the object into a JSON string representation.  Typically used for debug.
     func toJSONString() -> String?
     
-    ///Serializes the object into a JSON object ot type Dictionary<String, Any>
+    ///Serializes the object into a of type Dictionary<String, Any>
     func toJSONObject() -> Dictionary<String, Any>?
     
     ///Deserializes the JSON data stream into an instance of the object.  Returns nil if the data stream does not match the target object graph, or the object graphs optionallity descriptors.
