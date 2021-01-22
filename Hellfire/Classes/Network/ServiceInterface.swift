@@ -199,39 +199,26 @@ public class ServiceInterface: NSObject {
     }
     
     public weak var sessionDelegate: HellfireSessionDelegate?
-    
-    /// Executes a background upload task for the `NetworkRequest` using a local `URL` as the source to be uploaded.  The upload task is created on the background session.  Response is returned via the delegate callback.
-    /// - Parameters:
-    ///   - request: The network request to be executed
-    ///   - localURL: Local URL to the source that is to be uploaded.
-    /// - Returns: `RequestTaskIdentifier` that identifies the underlying URLSessionDataTask.  This identifier can be used to cancel the network request.
-    public func executeBackgroundUpload(_ request: NetworkRequest, localURL: URL) -> RequestTaskIdentifier? {
-        let _request = NetworkRequest.uploadRequest(fromRequest: request)
-        let urlRequest = self.urlRequest(fromNetworkRequest: _request)
-        let task = self.backgroundSession.uploadTask(with: urlRequest, fromFile: localURL)
-        self.requestCollection.add(request: urlRequest, task: task)
-        task.resume()
-        return task.taskIdentifier
-    }
-    
-
+   
     public func executeUpload(_ request: MultipartRequest) -> RequestTaskIdentifier? {
-        guard let urlRequest = try? request.build() else {
-//            completion(.failure(ServiceError(request: <#T##URLRequest#>, error: <#T##Error?#>, statusCode: <#T##StatusCode#>, responseBody: <#T##Data?#>, userCancelledRequest: <#T##Bool#>)))
-            return nil
+        do {
+            var urlRequest = try request.build()
+            
+            //Ask session delegate for additional headers or updates to headers for this request.
+            let appHeaders: [HTTPHeader] = self.sessionDelegate?.headerCollection(forRequest: request) ?? []
+            appHeaders.forEach({ (header) in
+                urlRequest.setValue(header.value, forHTTPHeaderField: header.name)
+            })
+            
+            let task = self.backgroundSession.uploadTask(withStreamedRequest: urlRequest)
+            self.requestCollection.add(request: urlRequest, task: task)
+            task.resume()
+            return task.taskIdentifier
+        } catch (let error) {
+            let serviceError = ServiceError(request: nil, error: error, statusCode: -666, responseBody: nil, userCancelledRequest: false)
+            self.sessionDelegate?.backgroundTask(nil, didComplete: .failure(serviceError))
         }
-        
-        let task = self.backgroundSession.uploadTask(withStreamedRequest: urlRequest)
-        
-//        { [weak self] (data, response, error) in
-//            guard let strongSelf = self else { return }
-//            strongSelf.taskResponseHandler(request: _request, urlRequest: urlRequest, completion: completion, data: data, response: response, error: error)
-//        }
-//
-//        self.requestCollection.add(request: urlRequest, task: task)
-        task.resume()
-        
-        return task.taskIdentifier
+        return nil
     }
     
     ///Executes the network request asynchronously as a [URLSessionDataTask](apple-reference-documentation://ls%2Fdocumentation%2Ffoundation%2FURLSessionDataTask), intended to be a relatively short request.
@@ -291,11 +278,16 @@ extension ServiceInterface: URLSessionDataDelegate {
 
     public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
         self.sessionDelegate?.session(session, dataTask: dataTask, didReceive: data)
+        print("===== Task did receive data =====")
+        print((data.count == 0) ? "===== Zero bytes in response!!" : NSString(data: data, encoding: 4) ?? "===== Unable to represent data as NSString")
     }
     
     public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        guard let request = self.requestCollection.task(forTaskIdentifier: task.taskIdentifier) else { return }
-        
+        guard let request = self.requestCollection.task(forTaskIdentifier: task.taskIdentifier) else {
+            print("===== Error: Unable to find task in request collection =====")
+            return
+        }
+        print("===== Task did Complete =====")
         self.requestCollection.removeRequest(forTaskIdentifier: task.taskIdentifier)
         let httpURLResponse = task.response as? HTTPURLResponse
         let statusCode = self.statusCodeForResponse(httpURLResponse, error: error)
@@ -316,6 +308,7 @@ extension ServiceInterface: URLSessionDataDelegate {
     
     public func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
         DispatchQueue.main.async { [weak self] in
+            print("===== Task did send data bytes: \(bytesSent) of total bytes sent: \(totalBytesSent) - total bytes to be sent: \(totalBytesExpectedToSend)  =====")
             self?.sessionDelegate?.backgroundTask(task, didSendBytes: Int(bytesSent), totalBytesSent: Int(totalBytesSent), totalBytesExpectedToSend: Int(totalBytesExpectedToSend))
         }
     }
@@ -330,13 +323,7 @@ extension ServiceInterface: URLSessionTaskDelegate {
                            task: URLSessionTask,
                            didReceive challenge: URLAuthenticationChallenge,
                            completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        completionHandler(.performDefaultHandling, nil)
-        print("============================ Task auth challenge delegate callback ============================ ")
-        if challenge.previousFailureCount > 0 {
-            completionHandler(.cancelAuthenticationChallenge, nil)
-        } else {
-            completionHandler(.performDefaultHandling, nil)
-        }
+        self.sessionDelegate?.session(session, task: task, didReceive: challenge, completionHandler: completionHandler)
     }
 }
 
@@ -368,11 +355,6 @@ extension ServiceInterface: URLSessionDelegate {
     public func urlSession(_ session: URLSession,
                            didReceive challenge: URLAuthenticationChallenge,
                            completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        print("============================  Session auth challenge delegate callback ============================ ")
-        if challenge.previousFailureCount > 0 {
-            completionHandler(.cancelAuthenticationChallenge, nil)
-        } else {
-            completionHandler(.performDefaultHandling, nil)
-        }
+        self.sessionDelegate?.session(session, didReceive: challenge, completionHandler: completionHandler)
     }
 }

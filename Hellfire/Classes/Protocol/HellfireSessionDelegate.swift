@@ -31,7 +31,7 @@ public protocol HellfireSessionDelegate: class {
     /// - Parameters:
     ///   - task: URLSessionTask for this response.
     ///   - result: Represents the success or failure result of a `NetworkRequest`.
-    func backgroundTask(_ task: URLSessionTask, didComplete result: RequestResult?)
+    func backgroundTask(_ task: URLSessionTask?, didComplete result: RequestResult?)
     
     /// Sent periodically to notify the delegate of upload progress.  This information is also available as properties of the task.
     /// - Parameters:
@@ -64,8 +64,16 @@ public protocol HellfireSessionDelegate: class {
     ///   - completionHandler: A handler that your delegate method must call. This completion handler takes the following parameters:
     ///   * disposition - One of several constants that describes how the challenge should be handled.
     ///   * credential - The credential that should be used for authentication if disposition is NSURLSessionAuthChallengeUseCredential, otherwise NULL.
-    func session(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void)
+    func session(_ session: URLSession,
+                 didReceive challenge: URLAuthenticationChallenge,
+                 completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void)
     
+    
+    //Handles task specific challenges.  e.g. Username/Password
+    func session(_ session: URLSession,
+                    task: URLSessionTask,
+                    didReceive challenge: URLAuthenticationChallenge,
+                    completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void)
     
     /// Tells the delegate that the data task has received some of the expected data.
     ///
@@ -106,11 +114,46 @@ public extension HellfireSessionDelegate {
     
     func headerCollection(forRequest dataRequest: NetworkRequest) -> [HTTPHeader]? { return nil }
     func responseHeaders(headers: [HTTPHeader], forRequest: NetworkRequest) {}
-    func backgroundTask(_ task: URLSessionTask, didComplete result: RequestResult?) {}
+    func backgroundTask(_ task: URLSessionTask?, didComplete result: RequestResult?) {}
     func backgroundTask(_ task: URLSessionTask, didSendBytes bytesSent: Int, totalBytesSent: Int, totalBytesExpectedToSend: Int) {}
     func session(_ session: URLSession, didBecomeInvalidWithError error: Error?) {}
+    func session(_ session: URLSession, task: URLSessionTask, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        print("===== Task auth challenge delegate callback =====")
+        if challenge.previousFailureCount > 0 {
+            print("===== Cancel session auth challenge due to previous failure =====")
+            completionHandler(.cancelAuthenticationChallenge, nil)
+        } else {
+            print("===== Perform default handling of session auth with nil credentials =====")
+            completionHandler(.performDefaultHandling, nil)
+        }
+    }
+    
     func session(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        completionHandler(URLSession.AuthChallengeDisposition.cancelAuthenticationChallenge, nil)
+        print("===== Session auth challenge delegate callback =====")
+        if challenge.previousFailureCount > 0 {
+            print("===== Cancel session auth challenge due to previous failure =====")
+            completionHandler(.cancelAuthenticationChallenge, nil)
+        } else {
+            guard let trust = challenge.protectionSpace.serverTrust,
+                  challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
+                  challenge.protectionSpace.protocol == "https",
+                  challenge.protectionSpace.receivesCredentialSecurely == true
+            else {
+                print("===== Perform default handling of session auth with nil credentials =====")
+                completionHandler(.performDefaultHandling, nil)
+                return
+            }
+
+            var urlCredential: URLCredential?
+            var authChallengeDispostion: URLSession.AuthChallengeDisposition = URLSession.AuthChallengeDisposition.rejectProtectionSpace
+            
+            //if challenge.protectionSpace.host == self.webServiceResolver.host {
+            urlCredential = URLCredential(trust: trust)
+            authChallengeDispostion = URLSession.AuthChallengeDisposition.performDefaultHandling
+            //}
+            print("===== Perform default handling of session auth with server trust credentials =====")
+            completionHandler(authChallengeDispostion, urlCredential)
+        }
     }
     func session(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {}
     func backgroundSessionDidFinishEvents(session: URLSession) {}
