@@ -45,7 +45,7 @@ class ViewController: UIViewController {
         mpfd.append("\(800)".data(using: .utf8)!, withName: "Metadata.ImageWidthInPixels")
         mpfd.append("\(600)".data(using: .utf8)!, withName: "Metadata.ImageHeightInPixels")
         mpfd.append(fileURL, withName: "File")
-        let request = MultipartRequest(url: url, method: .post, multipartFormData: mpfd, isInBackgroundSession: false)
+        let request = MultipartRequest(url: url, method: .post, multipartFormData: mpfd)
         _ = self.serviceInterface.executeUpload(request)
         
     }

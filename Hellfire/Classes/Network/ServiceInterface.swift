@@ -200,9 +200,14 @@ public class ServiceInterface: NSObject {
     
     public weak var sessionDelegate: HellfireSessionDelegate?
    
+    private var requests: [MultipartRequest] = []
+    
     public func executeUpload(_ request: MultipartRequest) -> RequestTaskIdentifier? {
         do {
-            var urlRequest = try request.build()
+            self.requests.append(request)
+            let result = try request.build()
+            
+            var urlRequest = result.request
             
             //Ask session delegate for additional headers or updates to headers for this request.
             let appHeaders: [HTTPHeader] = self.sessionDelegate?.headerCollection(forRequest: request) ?? []
@@ -210,7 +215,8 @@ public class ServiceInterface: NSObject {
                 urlRequest.setValue(header.value, forHTTPHeaderField: header.name)
             })
             
-            let task = self.backgroundSession.uploadTask(withStreamedRequest: urlRequest)
+            //let task = self.backgroundSession.uploadTask(withStreamedRequest: urlRequest)
+            let task = self.backgroundSession.uploadTask(with: urlRequest, fromFile: result.fileURL)
             self.requestCollection.add(request: urlRequest, task: task)
             task.resume()
             return task.taskIdentifier
@@ -250,6 +256,8 @@ public class ServiceInterface: NSObject {
     ///     - taskIdentifier: Identifer for the network request.
     public func cancelRequest(taskIdentifier: RequestTaskIdentifier?) {
         guard let taskId = taskIdentifier else { return }
+        let task = self.requestCollection.taskRequestPair(forTaskIdentifier: taskId)?.task
+        task?.cancel()
         self.requestCollection.removeRequest(forTaskIdentifier: taskId)
     }
     
@@ -279,16 +287,15 @@ extension ServiceInterface: URLSessionDataDelegate {
     public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
         self.sessionDelegate?.session(session, dataTask: dataTask, didReceive: data)
         print("===== Task did receive data =====")
-        print((data.count == 0) ? "===== Zero bytes in response!!" : NSString(data: data, encoding: 4) ?? "===== Unable to represent data as NSString")
+        print((data.count == 0) ? "===== Zero bytes in response!!" : "===== Data Response: =====>\(NSString(data: data, encoding: 4) ?? "")<=====")
     }
     
     public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        guard let request = self.requestCollection.task(forTaskIdentifier: task.taskIdentifier) else {
+        guard let taskRequestPair = self.requestCollection.taskRequestPair(forTaskIdentifier: task.taskIdentifier) else {
             print("===== Error: Unable to find task in request collection =====")
             return
         }
         print("===== Task did Complete =====")
-        self.requestCollection.removeRequest(forTaskIdentifier: task.taskIdentifier)
         let httpURLResponse = task.response as? HTTPURLResponse
         let statusCode = self.statusCodeForResponse(httpURLResponse, error: error)
         let responseHeaders: [HTTPHeader] = self.responseHeaders(httpURLResponse)
@@ -299,11 +306,13 @@ extension ServiceInterface: URLSessionDataDelegate {
                 self?.sessionDelegate?.backgroundTask(task, didComplete: .success(dataResponse))
             }
         } else {
-            let serviceError = self.createServiceError(data: nil, statusCode: statusCode, error: error, request: request)
+            let serviceError = self.createServiceError(data: nil, statusCode: statusCode, error: error, request: taskRequestPair.request)
             DispatchQueue.main.async { [weak self] in
                 self?.sessionDelegate?.backgroundTask(task, didComplete: .failure(serviceError))
             }
         }
+        taskRequestPair.task.cancel()
+        self.requestCollection.removeRequest(forTaskIdentifier: task.taskIdentifier)
     }
     
     public func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
