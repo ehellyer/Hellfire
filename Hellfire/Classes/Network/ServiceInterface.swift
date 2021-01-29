@@ -200,7 +200,7 @@ public class ServiceInterface: NSObject {
     
     public weak var sessionDelegate: HellfireSessionDelegate?
    
-    public func executeUpload(_ request: MultipartRequest) -> RequestTaskIdentifier? {
+    public func execute(_ request: MultipartRequest) -> RequestTaskIdentifier? {
         do {
             let result = try request.build()
             var urlRequest = result.request
