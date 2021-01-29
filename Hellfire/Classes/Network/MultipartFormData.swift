@@ -231,11 +231,41 @@ public class MultipartFormData {
     /// Gets the file manager used for file operations.  Injected in the init, will default to FileManager.default if not provided.
     public let fileManager: FileManager
     
-    /// Returns the `Content-Type` header to `multipart/form-data`, including the boundry identifier used for the multipart form data request.
-    public private(set) lazy var contentType: HTTPHeader = HTTPHeader.contentType("multipart/form-data; boundary=\(self.boundary)")
+    /// Returns the `Content-Type` header as `multipart/form-data`, including the boundry identifier.
+    public lazy var contentType: HTTPHeader = HTTPHeader.contentType("multipart/form-data; boundary=\(self.boundary)")
 
     /// Returns the total byte count of all the form parts used to generate the `multipart/form-data` not including the boundaries.
     public var contentLength: UInt64 { self.formParts.reduce(0) { $0 + $1.contentLength } }
+    
+    
+    /// Encode the MultipartFormData form parts as an InputStream.
+    /// - Throws: An `HellfireError` if encoding encounters an error.
+    /// - Returns: Multipart/form-data request body as an InputStream.
+    public func streamEncode() throws -> InputStream {
+        self.formParts.first?.isInitialBoundary = true
+        self.formParts.last?.isFinalBoundary = true
+        
+        var streams: [InputStream] = []
+        
+        for formPart in self.formParts {
+            var boundaryData = formPart.isInitialBoundary ? self.initialBoundary : self.encapsulatedBoundary
+            let headerData = self.encodeHeaders(for: formPart)
+            boundaryData.append(headerData)
+            let boundaryStream = InputStream(data: boundaryData)
+            streams.append(boundaryStream)
+            
+            let bodyStream = formPart.inputStream
+            streams.append(bodyStream)
+            
+            if formPart.isFinalBoundary {
+                let finalBoundaryStream = InputStream(data: self.finalBoundary)
+                streams.append(finalBoundaryStream)
+            }
+        }
+        
+        return InputStreamsSerializer(inputStreams: streams)
+    }
+        
     
     /// Encodes all appended form parts into a single `Data` value.
     ///

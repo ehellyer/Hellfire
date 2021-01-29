@@ -8,7 +8,6 @@
 
 import Foundation
 
-public typealias RequestTaskIdentifier = Int
 public typealias ReachabilityHandler = (ReachabilityStatus) -> Void
 public typealias ServiceErrorHandler = (ServiceError) -> Void
 public typealias TaskResult = (RequestResult) -> Void
@@ -42,7 +41,9 @@ public class ServiceInterface: NSObject {
         configuration.shouldUseExtendedBackgroundIdleMode = true
         //configuration.timeoutIntervalForRequest = {For now using default - 60 seconds}
         //configuration.timeoutIntervalForResource = {For now using default - 7 days}
+        
         let urlSession = URLSession(configuration: configuration, delegate: self, delegateQueue: operationQueue)
+
         return urlSession
     }()
     private lazy var defaultRequestHeaders: [AnyHashable: Any] = {
@@ -53,20 +54,20 @@ public class ServiceInterface: NSObject {
         return headers
     }()
     
-    private func statusCodeForResponse(_ response: HTTPURLResponse?, error: Error?) -> StatusCode {
+    private func statusCodeForResponse(_ response: URLResponse?, error: Error?) -> StatusCode {
         /*
          In Hellfire, we always want to have a value in statusCode for easier error detection.
          This means that for non URL reponse errors, we set the statusCode to the negative values of 'URL Loading System Error Codes'.
          */
-        let statusCode: StatusCode = response?.statusCode ??
+        let statusCode: StatusCode = (response as? HTTPURLResponse)?.statusCode ??
             (error as NSError?)?.code ??
             //We should never get to this last option.  But if there was no statusCode from the response and there was no error instance, we are defaulting to HTTP.ok
             HTTPCode.ok.rawValue
         return statusCode
     }
     
-    private func responseHeaders(_ response: HTTPURLResponse?) -> [HTTPHeader] {
-        guard let headers = response?.allHeaderFields else { return [] }
+    private func responseHeaders(_ response: URLResponse?) -> [HTTPHeader] {
+        guard let headers = (response as? HTTPURLResponse)?.allHeaderFields else { return [] }
         let httpHeaders = headers.compactMap { HTTPHeader(name: "\($0.key)", value: "\($0.value)") }
         return httpHeaders
     }
@@ -133,8 +134,7 @@ public class ServiceInterface: NSObject {
     }
     
     private func taskResponseHandler(request: NetworkRequest, urlRequest: URLRequest, completion: @escaping TaskResult, data: Data?, response: URLResponse?, error: Error?) {
-        let httpURLResponse = response as? HTTPURLResponse
-        let statusCode = self.statusCodeForResponse(httpURLResponse, error: error)
+        let statusCode = self.statusCodeForResponse(response, error: error)
         
         //If call was successful and we have data, store response in disk cache.
         if let responseData = data, HTTPCode.isOk(statusCode: statusCode), request.cachePolicyType != .doNotCache {
@@ -142,11 +142,11 @@ public class ServiceInterface: NSObject {
         }
         
         //Send back response headers to delegate.  (Headers will be additionally included with the NetworkResponse.)
-        let responseHeaders: [HTTPHeader] = self.responseHeaders(httpURLResponse)
+        let responseHeaders: [HTTPHeader] = self.responseHeaders(response)
         self.sessionDelegate?.responseHeaders(headers: responseHeaders, forRequest: request)
         
         //Remove task from request collection
-        self.requestCollection.removeTask(forRequest: urlRequest)
+        self.requestCollection.removeTaskRequest(networkRequest: request)
         
         //Call completion block
         DispatchQueue.main.async {
@@ -200,13 +200,9 @@ public class ServiceInterface: NSObject {
     
     public weak var sessionDelegate: HellfireSessionDelegate?
    
-    private var requests: [MultipartRequest] = []
-    
     public func executeUpload(_ request: MultipartRequest) -> RequestTaskIdentifier? {
         do {
-            self.requests.append(request)
             let result = try request.build()
-            
             var urlRequest = result.request
             
             //Ask session delegate for additional headers or updates to headers for this request.
@@ -215,11 +211,10 @@ public class ServiceInterface: NSObject {
                 urlRequest.setValue(header.value, forHTTPHeaderField: header.name)
             })
             
-            //let task = self.backgroundSession.uploadTask(withStreamedRequest: urlRequest)
-            let task = self.backgroundSession.uploadTask(with: urlRequest, fromFile: result.fileURL)
-            self.requestCollection.add(request: urlRequest, task: task)
+            let task = self.backgroundSession.uploadTask(with: urlRequest, fromFile: result.requestBodyURL)
+            let taskIdentifier = self.requestCollection.add(networkRequest: request, task: task, for: urlRequest, requestBodyURL: result.requestBodyURL)
             task.resume()
-            return task.taskIdentifier
+            return taskIdentifier
         } catch (let error) {
             let serviceError = ServiceError(request: nil, error: error, statusCode: -666, responseBody: nil, userCancelledRequest: false)
             self.sessionDelegate?.backgroundTask(nil, didComplete: .failure(serviceError))
@@ -244,10 +239,10 @@ public class ServiceInterface: NSObject {
             strongSelf.taskResponseHandler(request: request, urlRequest: urlRequest, completion: completion, data: data, response: response, error: error)
         }
         
-        self.requestCollection.add(request: urlRequest, task: task)
+        let taskIdentifier = self.requestCollection.add(networkRequest: request, task: task, for: urlRequest, requestBodyURL: nil)
         task.resume()
         
-        return task.taskIdentifier
+        return taskIdentifier
     }
     
     ///Cancels the network request for the specified request task identifier.
@@ -256,16 +251,16 @@ public class ServiceInterface: NSObject {
     ///     - taskIdentifier: Identifer for the network request.
     public func cancelRequest(taskIdentifier: RequestTaskIdentifier?) {
         guard let taskId = taskIdentifier else { return }
-        let task = self.requestCollection.taskRequestPair(forTaskIdentifier: taskId)?.task
-        task?.cancel()
-        self.requestCollection.removeRequest(forTaskIdentifier: taskId)
+        let item = self.requestCollection.taskRequestItem(forTaskIdentifier: taskId)
+        item?.sessionTask.cancel()
+        self.requestCollection.removeTaskRequest(forTaskIdentifier: taskId)
     }
     
     ///Cancels all current network requests.
     public func cancelAllCurrentRequests() {
-        let tasks = self.requestCollection.allTasks()
-        tasks.forEach { (task) in
-            self.cancelRequest(taskIdentifier: task)
+        let taskIdentifiers = self.requestCollection.allTaskIdentifiers()
+        taskIdentifiers.forEach { (taskIdentifier) in
+            self.cancelRequest(taskIdentifier: taskIdentifier)
         }
     }
     
@@ -291,14 +286,13 @@ extension ServiceInterface: URLSessionDataDelegate {
     }
     
     public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        guard let taskRequestPair = self.requestCollection.taskRequestPair(forTaskIdentifier: task.taskIdentifier) else {
+        guard let taskRequestItem = self.requestCollection.taskRequestItem(forSessionTask: task) else {
             print("===== Error: Unable to find task in request collection =====")
             return
         }
         print("===== Task did Complete =====")
-        let httpURLResponse = task.response as? HTTPURLResponse
-        let statusCode = self.statusCodeForResponse(httpURLResponse, error: error)
-        let responseHeaders: [HTTPHeader] = self.responseHeaders(httpURLResponse)
+        let statusCode = self.statusCodeForResponse(task.response, error: error)
+        let responseHeaders: [HTTPHeader] = self.responseHeaders(task.response)
         
         if HTTPCode.isOk(statusCode: statusCode) {
             let dataResponse = NetworkResponse(headers: responseHeaders, body: nil, statusCode: statusCode)
@@ -306,13 +300,14 @@ extension ServiceInterface: URLSessionDataDelegate {
                 self?.sessionDelegate?.backgroundTask(task, didComplete: .success(dataResponse))
             }
         } else {
-            let serviceError = self.createServiceError(data: nil, statusCode: statusCode, error: error, request: taskRequestPair.request)
+            let serviceError = self.createServiceError(data: nil, statusCode: statusCode, error: error, request: taskRequestItem.urlRequest)
             DispatchQueue.main.async { [weak self] in
                 self?.sessionDelegate?.backgroundTask(task, didComplete: .failure(serviceError))
             }
         }
-        taskRequestPair.task.cancel()
-        self.requestCollection.removeRequest(forTaskIdentifier: task.taskIdentifier)
+        
+        (taskRequestItem.networkRequest as? MultipartRequest)?.cleanUpHttpBody()
+        self.requestCollection.removeTaskRequest(forTaskIdentifier: taskRequestItem.identifier)
     }
     
     public func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {

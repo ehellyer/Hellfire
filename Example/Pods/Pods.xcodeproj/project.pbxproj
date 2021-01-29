@@ -33,6 +33,7 @@
 		DFBA464759251C29BB3000EB9FE3D48A /* JSONSerializable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B13B95174A7F6CF038E7981483F6FA15 /* JSONSerializable.swift */; };
 		E0B11AE62D44049E672AA59645B8778A /* Pods-Hellfire_Tests-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 830180C6618EC58D07AADB862FBD3F81 /* Pods-Hellfire_Tests-dummy.m */; };
 		E0C9A570A3E9EE8F2AB0BA8D5A9D089A /* CachePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66D289CE67B091E5E47C5B0CECC18EED /* CachePolicy.swift */; };
+		EB4AD72C25C393EC003672FA /* InputStreamsSerializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB4AD72B25C393EC003672FA /* InputStreamsSerializer.swift */; };
 		EBEB168D25B0F1B1008AE2DC /* MultipartFormData.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBEB168C25B0F1B1008AE2DC /* MultipartFormData.swift */; };
 		EBEB169225B0F72F008AE2DC /* MultipartRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBEB169125B0F72F008AE2DC /* MultipartRequest.swift */; };
 		EBEB16A125B10F3C008AE2DC /* EncodingHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBEB16A025B10F3C008AE2DC /* EncodingHelper.swift */; };
@@ -110,6 +111,7 @@
 		DA85B54D2F361B610A15FC2BC2CE7F82 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		DBA1859B0AFDE9CB5A116BFDC402FAEA /* Hellfire.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = Hellfire.modulemap; sourceTree = "<group>"; };
 		EA3A2E0370F6C4ED1A5ADDAEFF7C9239 /* Pods-Hellfire_Example-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-Hellfire_Example-umbrella.h"; sourceTree = "<group>"; };
+		EB4AD72B25C393EC003672FA /* InputStreamsSerializer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InputStreamsSerializer.swift; sourceTree = "<group>"; };
 		EBEB168C25B0F1B1008AE2DC /* MultipartFormData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipartFormData.swift; sourceTree = "<group>"; };
 		EBEB169125B0F72F008AE2DC /* MultipartRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipartRequest.swift; sourceTree = "<group>"; };
 		EBEB16A025B10F3C008AE2DC /* EncodingHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodingHelper.swift; sourceTree = "<group>"; };
@@ -300,6 +302,7 @@
 				9D00E14A8E70F69B582A22E112C425D4 /* HTTPCode.swift */,
 				414A7B5F9ABED958C018B27A102E1A40 /* HTTPHeader.swift */,
 				94C90EB06FC901B5E702AF0E4D32CAB0 /* HTTPMethod.swift */,
+				EB4AD72B25C393EC003672FA /* InputStreamsSerializer.swift */,
 				EBEB168C25B0F1B1008AE2DC /* MultipartFormData.swift */,
 				EBEB169125B0F72F008AE2DC /* MultipartRequest.swift */,
 				9C84913B5F64ED2610ABCC633973B8D8 /* NetworkReachabilityManager.swift */,
@@ -483,6 +486,7 @@
 				8546A38A45C8FDA2EFA3B72CD8B5A0FB /* FileManager+Extension.swift in Sources */,
 				1582DBDBEC7A3A693C7141DD7F293D34 /* Hellfire-dummy.m in Sources */,
 				B57B91969A8A9A85A5A685D387BD6CCF /* HTTPCode.swift in Sources */,
+				EB4AD72C25C393EC003672FA /* InputStreamsSerializer.swift in Sources */,
 				B931708B86CF868CB658A5E19B2A9DA3 /* HTTPHeader+Extension.swift in Sources */,
 				3448BA0061BBE1B22D540D12B7A3797F /* HTTPHeader.swift in Sources */,
 				EBEB16A125B10F3C008AE2DC /* EncodingHelper.swift in Sources */,

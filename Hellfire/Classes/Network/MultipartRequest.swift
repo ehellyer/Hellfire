@@ -9,6 +9,9 @@ import Foundation
 
 public class MultipartRequest: NetworkRequest {
     
+    private let fileManager: FileManager
+    private var requestBodyURL: URL?
+    
     public init(url: URL,
                 method: HTTPMethod,
                 multipartFormData: MultipartFormData) {
@@ -21,7 +24,7 @@ public class MultipartRequest: NetworkRequest {
     
     public var multipartFormData: MultipartFormData
     
-    public func build() throws -> (request: URLRequest, fileURL: URL) {
+    public func build() throws -> (request: URLRequest, requestBodyURL: URL) {
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = self.method.name
         urlRequest.setValue(self.multipartFormData.contentType.value, forHTTPHeaderField: self.multipartFormData.contentType.name)
@@ -29,27 +32,25 @@ public class MultipartRequest: NetworkRequest {
         
         let tempDirectoryURL = fileManager.temporaryDirectory
         let directoryURL = tempDirectoryURL.appendingPathComponent("hellfire/multipart.form.data")
-        let fileName = "MultipartFormDataRequest\(String.randomString(length: 10)).txt"
-        let fileURL = directoryURL.appendingPathComponent(fileName)
-        
+        let fileName = "MultipartFormDataRequest\(String.randomString(length: 15)).txt"
+        let _requestBodyURL = directoryURL.appendingPathComponent(fileName)
+        self.requestBodyURL = _requestBodyURL
         try fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
-        
+
         do {
-            try multipartFormData.writeEncodedData(to: fileURL)
+            try multipartFormData.writeEncodedData(to: _requestBodyURL)
         } catch {
-            // Cleanup after attempted write if it fails.
-            try? fileManager.removeItem(at: fileURL)
+            self.cleanUpHttpBody()
             throw error
         }
         
-//        self.inputStream = InputStream(url: fileURL)
-//        urlRequest.httpBodyStream = self.inputStream
-        
-        return (request: urlRequest, fileURL: fileURL)
+        return (request: urlRequest, requestBodyURL: _requestBodyURL)
     }
     
-    private let fileManager: FileManager
-//    private var inputStream: InputStream?
+    public func cleanUpHttpBody() {
+        guard let _requestBodyURL = self.requestBodyURL else { return }
+        try? self.fileManager.removeItem(at: _requestBodyURL)
+    }
 }
 
 
