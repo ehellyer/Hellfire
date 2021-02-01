@@ -14,14 +14,38 @@ public protocol HellfireSessionDelegate: class {
     /// Asks delegate to return all the additional headers required for the `NetworkRequest`
     /// - Note: Duplicate headers returned in this call will override those that were set by the `ServiceInterface` based on the `NetworkRequest` parameters and defaults.
     /// - Parameter dataRequest: The `NetworkRequest` that initiated this delegate call.
-    func headerCollection(forRequest dataRequest: NetworkRequest) -> [HTTPHeader]?
+    func headerCollection(forRequest request: NetworkRequest) -> [HTTPHeader]?
     
     /// A  optional global way of telling the delegate the returned response headers for a given request.
     /// - Note: Response headers are also incuded in the `NetworkResponse` of a successfull `NetworkRequest`
     /// - Parameters:
     ///   - headers: An array of headers returned in the response.
     ///   - forRequest: The `NetworkRequest` that initiated this response.
-    func responseHeaders(headers: [HTTPHeader], forRequest: NetworkRequest)
+    func responseHeaders(headers: [HTTPHeader],
+                         forRequest request: NetworkRequest)
+    
+    
+    /// Tells the URL session that the session has been invalidated.
+    ///
+    ///  If you invalidate a session by calling its [finishTasksAndInvalidate()](apple-reference-documentation://ls%2Fdocumentation%2Ffoundation%2Furlsession%2F1407428-finishtasksandinvalidate) method, the session waits until after the final task in the session finishes or fails before calling this delegate method. If you call the [invalidateAndCancel()](apple-reference-documentation://ls%2Fdocumentation%2Ffoundation%2Furlsession%2F1411538-invalidateandcancel) method, the session calls this delegate method immediately.
+    /// - Parameters:
+    ///   - session: The session object that was invalidated.
+    ///   - error: The error that caused invalidation, or nil if the invalidation was explicit.
+    func session(_ session: URLSession,
+                 didBecomeInvalidWithError error: Error?)
+    
+    /// Tells the delegate that the data task has received some of the expected data.
+    ///
+    /// Because the data object parameter is often pieced together from a number of different data objects, whenever possible, use the enumerateBytes(_:) method to iterate through the data rather than using the bytes method (which flattens the data object into a single memory block).
+    ///
+    /// This delegate method may be called more than once, and each call provides only data received since the previous call. The app is responsible for accumulating this data if needed.
+    /// - Parameters:
+    ///   - session: The session containing the data task that provided data.
+    ///   - dataTask: The data task that provided data.
+    ///   - data: A data object containing the transferred data.
+    func session(_ session: URLSession,
+                 dataTask: URLSessionDataTask,
+                 didReceive data: Data)
     
     /// Tells the delegate that the background `URLSessionUploadTask` finished transferring data in the background.
     /// - Parameter result: Represents the success or failure result of a `NetworkRequest`.
@@ -31,7 +55,8 @@ public protocol HellfireSessionDelegate: class {
     /// - Parameters:
     ///   - task: URLSessionTask for this response.
     ///   - result: Represents the success or failure result of a `NetworkRequest`.
-    func backgroundTask(_ task: URLSessionTask?, didComplete result: RequestResult?)
+    func backgroundTask(_ task: URLSessionTask?,
+                        didCompleteWithResult result: RequestResult?)
     
     /// Sent periodically to notify the delegate of upload progress.  This information is also available as properties of the task.
     /// - Parameters:
@@ -44,7 +69,10 @@ public protocol HellfireSessionDelegate: class {
     ///     * From the Content-Length in the request object, if you explicitly set it.
     ///
     ///     Otherwise, the value is [NSURLSessionTransferSizeUnknown](apple-reference-documentation://ls%2Fdocumentation%2Ffoundation%2Fnsurlsessiontransfersizeunknown) (-1) if you provided a stream or body data object, or zero (0) if you did not.
-    func backgroundTask(_ task: URLSessionTask, didSendBytes bytesSent: Int, totalBytesSent: Int, totalBytesExpectedToSend: Int)
+    func backgroundTask(_ task: URLSessionTask,
+                        didSendBytes bytesSent: Int,
+                        totalBytesSent: Int,
+                        totalBytesExpectedToSend: Int)
     
     
     /// Requests credentials from the delegate in response to a session-level authentication request from the remote server.
@@ -75,24 +103,9 @@ public protocol HellfireSessionDelegate: class {
                     didReceive challenge: URLAuthenticationChallenge,
                     completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void)
     
-    /// Tells the delegate that the data task has received some of the expected data.
-    ///
-    /// Because the data object parameter is often pieced together from a number of different data objects, whenever possible, use the enumerateBytes(_:) method to iterate through the data rather than using the bytes method (which flattens the data object into a single memory block).
-    ///
-    /// This delegate method may be called more than once, and each call provides only data received since the previous call. The app is responsible for accumulating this data if needed.
-    /// - Parameters:
-    ///   - session: The session containing the data task that provided data.
-    ///   - dataTask: The data task that provided data.
-    ///   - data: A data object containing the transferred data.
-    func session(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data)
+
     
-    /// Tells the URL session that the session has been invalidated.
-    ///
-    ///  If you invalidate a session by calling its [finishTasksAndInvalidate()](apple-reference-documentation://ls%2Fdocumentation%2Ffoundation%2Furlsession%2F1407428-finishtasksandinvalidate) method, the session waits until after the final task in the session finishes or fails before calling this delegate method. If you call the [invalidateAndCancel()](apple-reference-documentation://ls%2Fdocumentation%2Ffoundation%2Furlsession%2F1411538-invalidateandcancel) method, the session calls this delegate method immediately.
-    /// - Parameters:
-    ///   - session: The session object that was invalidated.
-    ///   - error: The error that caused invalidation, or nil if the invalidation was explicit.
-    func session(_ session: URLSession, didBecomeInvalidWithError error: Error?)
+
     
     
     /// Tells the delegate that all messages enqueued for a session have been delivered.
@@ -112,12 +125,30 @@ public protocol HellfireSessionDelegate: class {
 //Thus making the protocol methods optional for the delegate.
 public extension HellfireSessionDelegate {
     
-    func headerCollection(forRequest dataRequest: NetworkRequest) -> [HTTPHeader]? { return nil }
-    func responseHeaders(headers: [HTTPHeader], forRequest: NetworkRequest) {}
-    func backgroundTask(_ task: URLSessionTask?, didComplete result: RequestResult?) {}
-    func backgroundTask(_ task: URLSessionTask, didSendBytes bytesSent: Int, totalBytesSent: Int, totalBytesExpectedToSend: Int) {}
-    func session(_ session: URLSession, didBecomeInvalidWithError error: Error?) {}
-    func session(_ session: URLSession, task: URLSessionTask, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+    func headerCollection(forRequest request: NetworkRequest) -> [HTTPHeader]? {
+        return nil
+    }
+    
+    func responseHeaders(headers: [HTTPHeader],
+                         forRequest request: NetworkRequest) { }
+    
+    func session(_ session: URLSession,
+                 didBecomeInvalidWithError error: Error?) { }
+    
+    func session(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) { }
+    
+    func backgroundTask(_ task: URLSessionTask?,
+                        didCompleteWithResult result: RequestResult?) { }
+    
+    func backgroundTask(_ task: URLSessionTask,
+                        didSendBytes bytesSent: Int,
+                        totalBytesSent: Int,
+                        totalBytesExpectedToSend: Int) {}
+
+    func session(_ session: URLSession,
+                 task: URLSessionTask,
+                 didReceive challenge: URLAuthenticationChallenge,
+                 completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         print("===== Task auth challenge delegate callback =====")
         if challenge.previousFailureCount > 0 {
             print("===== Cancel session auth challenge due to previous failure =====")
@@ -128,7 +159,9 @@ public extension HellfireSessionDelegate {
         }
     }
     
-    func session(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+    func session(_ session: URLSession,
+                 didReceive challenge: URLAuthenticationChallenge,
+                 completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         print("===== Session auth challenge delegate callback =====")
         if challenge.previousFailureCount > 0 {
             print("===== Cancel session auth challenge due to previous failure =====")
@@ -155,6 +188,8 @@ public extension HellfireSessionDelegate {
             completionHandler(authChallengeDispostion, urlCredential)
         }
     }
-    func session(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {}
-    func backgroundSessionDidFinishEvents(session: URLSession) {}
+    
+    
+    
+    func backgroundSessionDidFinishEvents(session: URLSession) { }
 }
