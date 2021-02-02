@@ -26,6 +26,8 @@ public class ServiceInterface: NSObject {
     private lazy var dataTaskSession: URLSession = {
         let configuration = URLSessionConfiguration.default
         configuration.httpAdditionalHeaders = self.defaultRequestHeaders
+        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+        configuration.urlCache = nil
         let urlSession = URLSession(configuration: configuration)
         return urlSession
     }()
@@ -36,6 +38,8 @@ public class ServiceInterface: NSObject {
 
         let configuration = URLSessionConfiguration.background(withIdentifier: self.backgroundSessionIdentifier)
         configuration.httpAdditionalHeaders = self.defaultRequestHeaders
+        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+        configuration.urlCache = nil
         configuration.sessionSendsLaunchEvents = true
         configuration.isDiscretionary = false
         configuration.shouldUseExtendedBackgroundIdleMode = true
