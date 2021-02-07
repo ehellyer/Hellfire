@@ -26,7 +26,7 @@ public class ServiceInterface: NSObject {
     private lazy var dataTaskSession: URLSession = {
         let configuration = URLSessionConfiguration.default
         configuration.httpAdditionalHeaders = self.defaultRequestHeaders
-        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+        configuration.requestCachePolicy = .reloadIgnoringCacheData
         configuration.urlCache = nil
         let urlSession = URLSession(configuration: configuration)
         return urlSession
@@ -38,7 +38,7 @@ public class ServiceInterface: NSObject {
 
         let configuration = URLSessionConfiguration.background(withIdentifier: self.backgroundSessionIdentifier)
         configuration.httpAdditionalHeaders = self.defaultRequestHeaders
-        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+        configuration.requestCachePolicy = .reloadIgnoringCacheData
         configuration.urlCache = nil
         configuration.sessionSendsLaunchEvents = true
         configuration.isDiscretionary = false
@@ -231,6 +231,7 @@ public class ServiceInterface: NSObject {
                                             responseBody: nil,
                                             userCancelledRequest: false)
             self.sessionDelegate?.backgroundTask(nil,
+                                                 requestTaskIdentifier: nil,
                                                  didCompleteWithResult: .failure(serviceError))
         }
         return nil
@@ -243,7 +244,7 @@ public class ServiceInterface: NSObject {
     /// - Parameters:
     ///     - request: The network request to be executed
     ///     - completion: The completion function to be called with the response.
-    /// - Returns: `RequestTaskIdentifier` that identifies the underlying [URLSessionDataTask](apple-reference-documentation://ls%2Fdocumentation%2Ffoundation%2FURLSessionDataTask).  This identifier can be used to cancel the network request.
+    /// - Returns: `RequestTaskIdentifier`  Unique task identifier for the [URLSessionDataTask](apple-reference-documentation://ls%2Fdocumentation%2Ffoundation%2FURLSessionDataTask).  This identifier can be used to cancel the network request.
     public func execute(_ request: NetworkRequest, completion: @escaping TaskResult) -> RequestTaskIdentifier? {
         if hasCachedResponse(forRequest: request, completion: completion) { return nil }
         
@@ -270,7 +271,7 @@ public class ServiceInterface: NSObject {
     ///Cancels the network request for the specified request task identifier.
     ///
     /// - Parameters:
-    ///     - taskIdentifier: Identifer for the network request.
+    ///     - taskIdentifier: Unique task identifier for the URLSessionTask.
     public func cancelRequest(taskIdentifier: RequestTaskIdentifier?) {
         guard let taskId = taskIdentifier else { return }
         let item = self.requestCollection.taskRequestItem(forTaskIdentifier: taskId)
@@ -304,17 +305,18 @@ extension ServiceInterface: URLSessionDataDelegate {
     public func urlSession(_ session: URLSession,
                            dataTask: URLSessionDataTask,
                            didReceive data: Data) {
+        guard let taskRequestItem = self.requestCollection.taskRequestItem(forSessionTask: dataTask) else { return }
+        
         self.sessionDelegate?.session(session,
                                       dataTask: dataTask,
+                                      requestTaskIdentifier: taskRequestItem.identifier,
                                       didReceive: data)
     }
     
     public func urlSession(_ session: URLSession,
                            task: URLSessionTask,
                            didCompleteWithError error: Error?) {
-        guard let taskRequestItem = self.requestCollection.taskRequestItem(forSessionTask: task) else {
-            return
-        }
+        guard let taskRequestItem = self.requestCollection.taskRequestItem(forSessionTask: task) else { return }
 
         let statusCode = self.statusCodeForResponse(task.response,
                                                     error: error)
@@ -326,6 +328,7 @@ extension ServiceInterface: URLSessionDataDelegate {
                                                statusCode: statusCode)
             DispatchQueue.main.async { [weak self] in
                 self?.sessionDelegate?.backgroundTask(task,
+                                                      requestTaskIdentifier: taskRequestItem.identifier,
                                                       didCompleteWithResult: .success(dataResponse))
             }
         } else {
@@ -335,6 +338,7 @@ extension ServiceInterface: URLSessionDataDelegate {
                                                        request: taskRequestItem.urlRequest)
             DispatchQueue.main.async { [weak self] in
                 self?.sessionDelegate?.backgroundTask(task,
+                                                      requestTaskIdentifier: taskRequestItem.identifier,
                                                       didCompleteWithResult: .failure(serviceError))
             }
         }
@@ -348,8 +352,11 @@ extension ServiceInterface: URLSessionDataDelegate {
                            didSendBodyData bytesSent: Int64,
                            totalBytesSent: Int64,
                            totalBytesExpectedToSend: Int64) {
+        guard let taskRequestItem = self.requestCollection.taskRequestItem(forSessionTask: task) else { return }
+
         DispatchQueue.main.async { [weak self] in
             self?.sessionDelegate?.backgroundTask(task,
+                                                  forRequestIdentifier: taskRequestItem.identifier,
                                                   didSendBytes: Int(bytesSent),
                                                   totalBytesSent: Int(totalBytesSent),
                                                   totalBytesExpectedToSend: Int(totalBytesExpectedToSend))

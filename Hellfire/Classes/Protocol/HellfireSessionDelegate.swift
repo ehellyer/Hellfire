@@ -45,6 +45,7 @@ public protocol HellfireSessionDelegate: class {
     ///   - data: A data object containing the transferred data.
     func session(_ session: URLSession,
                  dataTask: URLSessionDataTask,
+                 requestTaskIdentifier: RequestTaskIdentifier?,
                  didReceive data: Data)
     
     /// Tells the delegate that the background `URLSessionUploadTask` finished transferring data in the background.
@@ -54,14 +55,17 @@ public protocol HellfireSessionDelegate: class {
     /// Tells the delegate that the background `URLSessionUploadTask` finished transferring data in the background.
     /// - Parameters:
     ///   - task: URLSessionTask for this response.
+    ///   - requestTaskIdentifier: Unique task identifier for the URLSessionTask.
     ///   - result: Represents the success or failure result of a `NetworkRequest`.
     func backgroundTask(_ task: URLSessionTask?,
+                        requestTaskIdentifier: RequestTaskIdentifier?,
                         didCompleteWithResult result: RequestResult?)
     
     /// Sent periodically to notify the delegate of upload progress.  This information is also available as properties of the task.
     /// - Parameters:
     ///   - task: URLSessionTask for this response.
-    ///   - didSendBytes: Number of bytes sent since the last time this delegate was called.
+    ///   - requestIdentifier: Unique identifier for the URLSessionTask.
+    ///   - bytesSent: Number of bytes sent since the last time this delegate was called.
     ///   - totalBytesSent: The total number of bytes sent so far.
     ///   - totalBytesExpectedToSend: The expected length of the body data. The URL loading system can determine the length of the upload data in three ways:
     ///     * From the length of the NSData object provided as the upload body.
@@ -70,6 +74,7 @@ public protocol HellfireSessionDelegate: class {
     ///
     ///     Otherwise, the value is [NSURLSessionTransferSizeUnknown](apple-reference-documentation://ls%2Fdocumentation%2Ffoundation%2Fnsurlsessiontransfersizeunknown) (-1) if you provided a stream or body data object, or zero (0) if you did not.
     func backgroundTask(_ task: URLSessionTask,
+                        forRequestIdentifier requestIdentifier: RequestTaskIdentifier,
                         didSendBytes bytesSent: Int,
                         totalBytesSent: Int,
                         totalBytesExpectedToSend: Int)
@@ -135,12 +140,17 @@ public extension HellfireSessionDelegate {
     func session(_ session: URLSession,
                  didBecomeInvalidWithError error: Error?) { }
     
-    func session(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) { }
+    func session(_ session: URLSession,
+                 dataTask: URLSessionDataTask,
+                 requestTaskIdentifier: RequestTaskIdentifier?,
+                 didReceive data: Data) { }
     
     func backgroundTask(_ task: URLSessionTask?,
+                        requestTaskIdentifier: RequestTaskIdentifier?,
                         didCompleteWithResult result: RequestResult?) { }
     
     func backgroundTask(_ task: URLSessionTask,
+                        forRequestIdentifier requestIdentifier: RequestTaskIdentifier,
                         didSendBytes bytesSent: Int,
                         totalBytesSent: Int,
                         totalBytesExpectedToSend: Int) {}
