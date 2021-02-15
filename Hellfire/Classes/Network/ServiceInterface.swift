@@ -52,9 +52,7 @@ public class ServiceInterface: NSObject {
     }()
     private lazy var defaultRequestHeaders: [AnyHashable: Any] = {
         var headers = [AnyHashable: Any]()
-        [HTTPHeader.defaultUserAgent,
-         HTTPHeader(name: "X-Correlation-ID", value: UUID().uuidString)]
-            .forEach { headers[$0.name] = $0.value }
+        [HTTPHeader.defaultUserAgent].forEach { headers[$0.name] = $0.value }
         return headers
     }()
     
@@ -140,8 +138,7 @@ public class ServiceInterface: NSObject {
     private func taskResponseHandler(request: NetworkRequest, urlRequest: URLRequest, completion: @escaping TaskResult, data: Data?, response: URLResponse?, error: Error?) {
         let statusCode = self.statusCodeForResponse(response, error: error)
         
-        //If call was successful and we have data, store response in disk cache.
-        if let responseData = data, HTTPCode.isOk(statusCode: statusCode), request.cachePolicyType != .doNotCache {
+        if let responseData = data, HTTPCode.isOk(statusCode: statusCode) {
             self.diskCache.cache(data: responseData, forRequest: request)
         }
         
