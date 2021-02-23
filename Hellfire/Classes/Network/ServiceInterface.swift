@@ -224,24 +224,20 @@ public class ServiceInterface: NSObject {
     /// - Returns: Unique task identifier for the [URLSessionUploadTask](apple-reference-documentation://ls%2Fdocumentation%2Ffoundation%2FURLSessionUploadTask). This identifier can be used to cancel the network request.
     public func executeUpload(_ request: MultipartRequest) throws -> RequestTaskIdentifier? {
         do {
-            let result = try request.build()
-            
-            var urlRequest = result.request
+            let requestComponents = try request.build()
+            var urlRequest = requestComponents.urlRequest
             
             //Ask session delegate for additional headers or updates to headers for this request.
             let appHeaders: [HTTPHeader] = self.sessionDelegate?.headerCollection(forRequest: request) ?? []
             appHeaders.forEach({ (header) in
-                urlRequest.setValue(header.value,
-                                    forHTTPHeaderField: header.name)
+                urlRequest.setValue(header.value, forHTTPHeaderField: header.name)
             })
             
-            let task = self.backgroundSession.uploadTask(with: urlRequest, fromFile: result.requestBodyURL)
+            let task = self.backgroundSession.uploadTask(with: urlRequest, fromFile: requestComponents.requestBody)
             let taskIdentifier = UUID()
-            task.taskDescription = taskIdentifier.uuidString
-            task.networkRequest = request
+            task.requestItem = RequestItem(identifier: taskIdentifier, networkRequest: request)
             task.resume()
             return taskIdentifier
-            
         } catch (let error) {
             let serviceError = ServiceError(requestURL: request.url,
                                             error: error,
@@ -275,7 +271,7 @@ public class ServiceInterface: NSObject {
         }
         
         let taskIdentifier = UUID()
-        task.taskDescription = taskIdentifier.uuidString
+        task.requestItem = RequestItem(identifier: taskIdentifier, networkRequest: request)
         task.resume()
         return taskIdentifier
     }
@@ -287,46 +283,41 @@ public class ServiceInterface: NSObject {
             completion(dataTasks, uploadTasks, downloadTasks)
         }
     }
-    
+  
     ///Cancels the network request for the specified request task identifier.
     ///
     /// - Parameters:
     ///     - taskIdentifier: Unique task identifier for the URLSessionTask.
-    public func cancelRequest(taskIdentifier: RequestTaskIdentifier?) {
+    public func cancelUploadRequest(taskIdentifier: RequestTaskIdentifier?) {
         guard let taskId = taskIdentifier else { return }
-        self.backgroundSession.getAllTasks { (sessionTasks) in
-            if let task = sessionTasks.first(where: { $0.taskDescription == taskId.uuidString }) {
-                task.cancel()
-            }
-        }
-        self.dataTaskSession.getAllTasks { (sessionTasks) in
-            if let task = sessionTasks.first(where: { $0.taskDescription == taskId.uuidString }) {
+        self.backgroundSession.getAllTasks { (backgroundSessionTasks) in
+            if let task = backgroundSessionTasks.first(where: { $0.requestItem?.identifier == taskId }) {
                 task.cancel()
             }
         }
     }
     
-    ///Cancels all current network requests.
+    ///Cancels the network request for the specified request task identifier.
+    ///
+    /// - Parameters:
+    ///     - taskIdentifier: Unique task identifier for the URLSessionTask.
+    public func cancelDataRequest(taskIdentifier: RequestTaskIdentifier?) {
+        guard let taskId = taskIdentifier else { return }
+
+        self.dataTaskSession.getAllTasks { (dataSessionTasks) in
+            if let task = dataSessionTasks.first(where: { $0.requestItem?.identifier == taskId }) {
+                task.cancel()
+            }
+        }
+    }
+    
+    ///Cancels all current network requests on all sessions.
     public func cancelAllCurrentRequests() {
-        let semaphore = DispatchGroup()
-        semaphore.enter()
-        semaphore.enter()
-        
-        var sessionTasks: [URLSessionTask] = []
         self.backgroundSession.getAllTasks { (backgroundSessionTasks) in
-            sessionTasks.append(contentsOf: backgroundSessionTasks)
-            semaphore.leave()
+            backgroundSessionTasks.forEach { $0.cancel() }
         }
         self.dataTaskSession.getAllTasks { (dataSessionTasks) in
-            sessionTasks.append(contentsOf: dataSessionTasks)
-            semaphore.leave()
-        }
-        
-        let requestTaskIdentifiers: [RequestTaskIdentifier] = sessionTasks.compactMap {
-            self.getTaskIdentifier(string: $0.taskDescription)
-        }
-        requestTaskIdentifiers.forEach { (taskIdentifier) in
-            self.cancelRequest(taskIdentifier: taskIdentifier)
+            dataSessionTasks.forEach { $0.cancel() }
         }
     }
     
@@ -378,7 +369,7 @@ extension ServiceInterface: URLSessionDataDelegate {
             self?.sessionDelegate?.backgroundTask(task, didCompleteWithResult: result)
         }
         
-        (task.networkRequest as? MultipartRequest)?.cleanUpHttpBody()
+        (task.requestItem?.networkRequest as? MultipartRequest)?.cleanUpHttpBody()
     }
     
     public func urlSession(_ session: URLSession,

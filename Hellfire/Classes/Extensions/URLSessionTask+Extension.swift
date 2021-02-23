@@ -9,10 +9,10 @@ import Foundation
 
 private var associateKey: Void?
 
-internal extension URLSessionTask {
-    var networkRequest: NetworkRequest? {
+public extension URLSessionTask {
+    var requestItem: RequestItem? {
         get {
-            return objc_getAssociatedObject(self, &associateKey) as? NetworkRequest
+            return objc_getAssociatedObject(self, &associateKey) as? RequestItem
         }
         set {
             objc_setAssociatedObject(self, &associateKey, newValue, .OBJC_ASSOCIATION_RETAIN)
