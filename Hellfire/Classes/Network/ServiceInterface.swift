@@ -181,13 +181,6 @@ public class ServiceInterface: NSObject {
         }
     }
     
-    private func getTaskIdentifier(string: String?) -> UUID? {
-        if let taskIdentifier = string, let requestTaskIdentifier = UUID(uuidString: taskIdentifier) {
-            return requestTaskIdentifier
-        }
-        return nil
-    }
-    
     //MARK: - Public Property API
     
     ///Gets or sets the handler for the reachability status change events.
