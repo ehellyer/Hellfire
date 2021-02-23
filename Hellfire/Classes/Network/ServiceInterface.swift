@@ -232,11 +232,10 @@ public class ServiceInterface: NSObject {
             task.resume()
             return taskIdentifier
         } catch (let error) {
-            let serviceError = ServiceError(requestURL: request.url,
-                                            error: error,
-                                            statusCode: -666,
-                                            responseBody: nil,
-                                            userCancelledRequest: false)
+            let serviceError = self.createServiceError(data: error.localizedDescription.data(using: .utf8),
+                                                       statusCode: -666,
+                                                       error: error,
+                                                       requestURL: request.url)
             
             throw HellfireError.ServiceRequestError.unableToCreateTask(result: .failure(serviceError))
         }
