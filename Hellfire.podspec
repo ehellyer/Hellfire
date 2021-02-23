@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
     s.name             = 'Hellfire'
-    s.version          = '0.2.1'
+    s.version          = '0.3.0'
     s.summary          = 'Hellfire Network Lib'
     
     # This description is used to generate tags and improve search results.

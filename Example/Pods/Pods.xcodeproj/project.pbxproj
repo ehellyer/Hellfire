@@ -12,7 +12,6 @@
 		185874B58B54CA944A230B7EA4FA0A8B /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3212113385A8FBBDB272BD23C409FF61 /* Foundation.framework */; };
 		31916F85F3FF7547CCEA77F0BD7978A0 /* MD5Hash.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F5D34C2C9A379FB9EAC8BFF4257622 /* MD5Hash.swift */; };
 		3448BA0061BBE1B22D540D12B7A3797F /* HTTPHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 414A7B5F9ABED958C018B27A102E1A40 /* HTTPHeader.swift */; };
-		3F8E9FA839F09CA37B0AD6B47E23C29D /* RequestCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 978D83404C15C8262901A91188B8D5A3 /* RequestCollection.swift */; };
 		49A98741013510E3B3D89B35DFB86095 /* RequestResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85D8124C25128864C7FA5E774ED11E5 /* RequestResult.swift */; };
 		529FEA5443B87F947E71FDCC7E4C02D3 /* HellfireSessionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4FDC49B591C00CD5C991039EA32E6AC /* HellfireSessionDelegate.swift */; };
 		5D253E6819DFEF91A8DB23E4CD781FFA /* ReachabilityStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BA84C3BAA21DADBF73959022D2BD818 /* ReachabilityStatus.swift */; };
@@ -33,6 +32,7 @@
 		DFBA464759251C29BB3000EB9FE3D48A /* JSONSerializable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B13B95174A7F6CF038E7981483F6FA15 /* JSONSerializable.swift */; };
 		E0B11AE62D44049E672AA59645B8778A /* Pods-Hellfire_Tests-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 830180C6618EC58D07AADB862FBD3F81 /* Pods-Hellfire_Tests-dummy.m */; };
 		E0C9A570A3E9EE8F2AB0BA8D5A9D089A /* CachePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66D289CE67B091E5E47C5B0CECC18EED /* CachePolicy.swift */; };
+		EB20186525E52B9E006A3646 /* URLSessionTask+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB20186425E52B9E006A3646 /* URLSessionTask+Extension.swift */; };
 		EB4AD72C25C393EC003672FA /* InputStreamsSerializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB4AD72B25C393EC003672FA /* InputStreamsSerializer.swift */; };
 		EBEB168D25B0F1B1008AE2DC /* MultipartFormData.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBEB168C25B0F1B1008AE2DC /* MultipartFormData.swift */; };
 		EBEB169225B0F72F008AE2DC /* MultipartRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBEB169125B0F72F008AE2DC /* MultipartRequest.swift */; };
@@ -92,7 +92,6 @@
 		90C4E3AC1C7358D26AD8A1C572D7C32F /* Hellfire.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; path = Hellfire.podspec; sourceTree = "<group>"; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		91DB406C7C0A32AC5BAF87209CA013A5 /* Pods-Hellfire_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-Hellfire_Example.debug.xcconfig"; sourceTree = "<group>"; };
 		94C90EB06FC901B5E702AF0E4D32CAB0 /* HTTPMethod.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HTTPMethod.swift; sourceTree = "<group>"; };
-		978D83404C15C8262901A91188B8D5A3 /* RequestCollection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RequestCollection.swift; sourceTree = "<group>"; };
 		9BB4E3ACD2FD1A423BA552357F182B7E /* Pods-Hellfire_Example.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Pods-Hellfire_Example.modulemap"; sourceTree = "<group>"; };
 		9C84913B5F64ED2610ABCC633973B8D8 /* NetworkReachabilityManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NetworkReachabilityManager.swift; sourceTree = "<group>"; };
 		9D00E14A8E70F69B582A22E112C425D4 /* HTTPCode.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HTTPCode.swift; sourceTree = "<group>"; };
@@ -111,6 +110,7 @@
 		DA85B54D2F361B610A15FC2BC2CE7F82 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		DBA1859B0AFDE9CB5A116BFDC402FAEA /* Hellfire.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = Hellfire.modulemap; sourceTree = "<group>"; };
 		EA3A2E0370F6C4ED1A5ADDAEFF7C9239 /* Pods-Hellfire_Example-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-Hellfire_Example-umbrella.h"; sourceTree = "<group>"; };
+		EB20186425E52B9E006A3646 /* URLSessionTask+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URLSessionTask+Extension.swift"; sourceTree = "<group>"; };
 		EB4AD72B25C393EC003672FA /* InputStreamsSerializer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InputStreamsSerializer.swift; sourceTree = "<group>"; };
 		EBEB168C25B0F1B1008AE2DC /* MultipartFormData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipartFormData.swift; sourceTree = "<group>"; };
 		EBEB169125B0F72F008AE2DC /* MultipartRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipartRequest.swift; sourceTree = "<group>"; };
@@ -241,6 +241,7 @@
 				FD267FBA2AFD67B7BA46C1EBDCA2C91C /* HTTPHeader+Extension.swift */,
 				39288E93384647EA83ABA91CF7B7B81C /* ServiceInterface+SharedInstance.swift */,
 				EED2F0CA9D2D89DD83582D1800A4D6B2 /* String+Extension.swift */,
+				EB20186425E52B9E006A3646 /* URLSessionTask+Extension.swift */,
 			);
 			name = Extensions;
 			path = Hellfire/Classes/Extensions;
@@ -309,7 +310,6 @@
 				11D546384E9E2A430BD5C3D55898D733 /* NetworkRequest.swift */,
 				D63D8F9948216E3222B5BD810DE75697 /* NetworkResponse.swift */,
 				1BA84C3BAA21DADBF73959022D2BD818 /* ReachabilityStatus.swift */,
-				978D83404C15C8262901A91188B8D5A3 /* RequestCollection.swift */,
 				D85D8124C25128864C7FA5E774ED11E5 /* RequestResult.swift */,
 				0A88C965CD268DAC02598005EC20C2D2 /* ServiceError.swift */,
 				69D4FCD38C0B8F3DFABDDCF3BB0B8467 /* ServiceInterface.swift */,
@@ -497,7 +497,6 @@
 				AB3C1748B3F0E6E47E5D0ED9DCD9E4F3 /* NetworkRequest.swift in Sources */,
 				C4526E1DF4014E1EE27A4C5F419D2FC9 /* NetworkResponse.swift in Sources */,
 				5D253E6819DFEF91A8DB23E4CD781FFA /* ReachabilityStatus.swift in Sources */,
-				3F8E9FA839F09CA37B0AD6B47E23C29D /* RequestCollection.swift in Sources */,
 				EBEB16A625B125C9008AE2DC /* HellfireError.swift in Sources */,
 				EBEB169225B0F72F008AE2DC /* MultipartRequest.swift in Sources */,
 				49A98741013510E3B3D89B35DFB86095 /* RequestResult.swift in Sources */,
@@ -505,6 +504,7 @@
 				EBEB168D25B0F1B1008AE2DC /* MultipartFormData.swift in Sources */,
 				FCE281E2344130AB6F439394E91881E8 /* ServiceInterface+SharedInstance.swift in Sources */,
 				7EDE8F1E292998899A9CFEC16F5506E7 /* ServiceInterface.swift in Sources */,
+				EB20186525E52B9E006A3646 /* URLSessionTask+Extension.swift in Sources */,
 				529FEA5443B87F947E71FDCC7E4C02D3 /* HellfireSessionDelegate.swift in Sources */,
 				6BB894203209A86F97B75423FCFD3387 /* String+Extension.swift in Sources */,
 			);

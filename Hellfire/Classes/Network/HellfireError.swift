@@ -38,6 +38,10 @@ public enum HellfireError: Error {
         case inputStreamReadFailed(error: Error)
     }
     
+    public enum ServiceRequestError: Error {
+        case unableToCreateTask(result: RequestResult)
+    }
+    
     /// Multipart form encoding failed.
     case multipartEncodingFailed(reason: MultipartEncodingFailureReason)
     

@@ -41,12 +41,12 @@ class ViewController: UIViewController {
         mpfd.append("\(6)".data(using: .utf8)!, withName: "Metadata.AttachmentTypeExtension") //6 - JPG
         mpfd.append(true.description.data(using: .utf8)!, withName: "Metadata.IsPublished")
         mpfd.append(true.description.data(using: .utf8)!, withName: "Metadata.IsMarketingPublished")
-        mpfd.append("\(3910450)".data(using: .utf8)!, withName: "Metadata.OriginiatedByContactId")
+        mpfd.append("\(3910450)".data(using: .utf8)!, withName: "Metadata.OriginatedByContactId")
         mpfd.append("\(800)".data(using: .utf8)!, withName: "Metadata.ImageWidthInPixels")
         mpfd.append("\(600)".data(using: .utf8)!, withName: "Metadata.ImageHeightInPixels")
         mpfd.append(fileURL, withName: "File")
         let request = MultipartRequest(url: url, method: .post, multipartFormData: mpfd)
-        _ = self.serviceInterface.executeUpload(request)
+        _ = try? self.serviceInterface.executeUpload(request)
         
     }
     
@@ -61,7 +61,7 @@ class ViewController: UIViewController {
         let _ = self.serviceInterface.execute(request) { (result) in
             switch result {
             case .failure(let serviceError):
-                print("Service error occured \(serviceError.error?.localizedDescription ?? "No error description")")
+                print("Service error occurred \(serviceError.error?.localizedDescription ?? "No error description")")
             case .success(let dataResponse):
                 if let t = [Post].initialize(jsonData: dataResponse.body) {
                     print("Item Count: \(t.count)")
