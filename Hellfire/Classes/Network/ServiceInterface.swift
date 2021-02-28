@@ -229,6 +229,7 @@ public class ServiceInterface: NSObject {
             let task = self.backgroundSession.uploadTask(with: urlRequest, fromFile: requestComponents.requestBody)
             let taskIdentifier = UUID()
             task.requestItem = RequestItem(identifier: taskIdentifier, networkRequest: request)
+            task.taskDescription = taskIdentifier.uuidString
             task.resume()
             return taskIdentifier
         } catch (let error) {
@@ -264,6 +265,7 @@ public class ServiceInterface: NSObject {
         
         let taskIdentifier = UUID()
         task.requestItem = RequestItem(identifier: taskIdentifier, networkRequest: request)
+        task.taskDescription = taskIdentifier.uuidString
         task.resume()
         return taskIdentifier
     }
