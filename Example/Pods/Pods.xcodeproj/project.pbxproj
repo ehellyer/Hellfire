@@ -31,7 +31,6 @@
 		CC2B31C39AA1473415CEC6D912B0355F /* Collection+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14F17B1021F3900FA411FE9C6728025E /* Collection+Extension.swift */; };
 		DFBA464759251C29BB3000EB9FE3D48A /* JSONSerializable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B13B95174A7F6CF038E7981483F6FA15 /* JSONSerializable.swift */; };
 		E0B11AE62D44049E672AA59645B8778A /* Pods-Hellfire_Tests-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 830180C6618EC58D07AADB862FBD3F81 /* Pods-Hellfire_Tests-dummy.m */; };
-		E0C9A570A3E9EE8F2AB0BA8D5A9D089A /* CachePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66D289CE67B091E5E47C5B0CECC18EED /* CachePolicy.swift */; };
 		EB20186525E52B9E006A3646 /* URLSessionTask+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB20186425E52B9E006A3646 /* URLSessionTask+Extension.swift */; };
 		EB20186A25E53842006A3646 /* RequestItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB20186925E53842006A3646 /* RequestItem.swift */; };
 		EB4AD72C25C393EC003672FA /* InputStreamsSerializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB4AD72B25C393EC003672FA /* InputStreamsSerializer.swift */; };
@@ -83,7 +82,6 @@
 		4E63A15D1A547AFB43264070241C8769 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		4F3797E6E29312EB13A8E02AB9F8BC1B /* Pods-Hellfire_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-Hellfire_Example.release.xcconfig"; sourceTree = "<group>"; };
 		55F1ED319152C4DB7B9B1E3AC8E11BBB /* Hellfire.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Hellfire.release.xcconfig; sourceTree = "<group>"; };
-		66D289CE67B091E5E47C5B0CECC18EED /* CachePolicy.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CachePolicy.swift; sourceTree = "<group>"; };
 		69D4FCD38C0B8F3DFABDDCF3BB0B8467 /* ServiceInterface.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ServiceInterface.swift; sourceTree = "<group>"; };
 		6DB18DDC04DB4D216A6F21828EB78DC7 /* Pods-Hellfire_Tests-frameworks.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-Hellfire_Tests-frameworks.sh"; sourceTree = "<group>"; };
 		75E546F120B00BB9BD83EA052C4CB4BF /* Pods-Hellfire_Tests-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-Hellfire_Tests-Info.plist"; sourceTree = "<group>"; };
@@ -252,7 +250,6 @@
 		A46BE7B58202D3C3BA4C5D48A35C4168 /* DiskCache */ = {
 			isa = PBXGroup;
 			children = (
-				66D289CE67B091E5E47C5B0CECC18EED /* CachePolicy.swift */,
 				342A461F858E9A4E96425C01878BD1F2 /* DiskCache.swift */,
 				D8F5D34C2C9A379FB9EAC8BFF4257622 /* MD5Hash.swift */,
 			);
@@ -483,7 +480,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E0C9A570A3E9EE8F2AB0BA8D5A9D089A /* CachePolicy.swift in Sources */,
 				CC2B31C39AA1473415CEC6D912B0355F /* Collection+Extension.swift in Sources */,
 				F89EE5EC9D8A56D1D37165F43D77FFDA /* DiskCache.swift in Sources */,
 				8546A38A45C8FDA2EFA3B72CD8B5A0FB /* FileManager+Extension.swift in Sources */,
