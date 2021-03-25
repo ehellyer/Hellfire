@@ -34,8 +34,8 @@ internal class DiskCache {
     private lazy var cachePolicies = CachePolicies()
     private var diskCacheEnabled = true
     private var activePolicyTrimming = Set<CachePolicyType>()
-    private var cacheTrimConcurrentQueue = DispatchQueue(label: "DiskCache_CacheTrimQueue", qos: DispatchQoS.userInitiated, attributes: .concurrent)
-    private var serialAccessQueue = DispatchQueue(label: "DiskCache_ActivePolicyQueue")
+    private var cacheTrimConcurrentQueue = DispatchQueue(label: "DiskCache_ConcurrentTrimCacheQueue", qos: DispatchQoS.userInitiated, attributes: .concurrent)
+    private var serialAccessQueue = DispatchQueue(label: "DiskCache_SerialAccessQueue")
     
     private func getBytesUsed(forPolicy policy: CachePolicy) -> UInt64 {
         self.serialAccessQueue.sync {
@@ -80,13 +80,13 @@ internal class DiskCache {
         var success = true
         for policy in self.cachePolicies.allPolicies() {
             policy.maxByteSize = config.policyMaxByteSize[policy.policyType] ?? 0
-            success = self.createFolderForSetting(policy: policy)
+            success = self.createFolder(forPolicy: policy)
             if (success == false) { break }
         }
         return success
     }
     
-    private func createFolderForSetting(policy: CachePolicy) -> Bool {
+    private func createFolder(forPolicy policy: CachePolicy) -> Bool {
         guard policy.policyType != .doNotCache else {
             return true
         }
@@ -132,7 +132,7 @@ internal class DiskCache {
     private func flushCacheFor(policy: CachePolicy) -> Bool {
         var success = false
         try? FileManager.default.removeItem(at: policy.cacheFolder)
-        success = self.createFolderForSetting(policy: policy)
+        success = self.createFolder(forPolicy: policy)
         return success
     }
     
