@@ -17,7 +17,6 @@ internal class DiskCache {
     }
     
     internal init(config: DiskCacheConfiguration) {
-        
         self.diskCacheEnabled = self.initializeCacheSettings(config: config)
         self.updateCurrentByteSizeForAllPolicies()
         
@@ -99,21 +98,20 @@ internal class DiskCache {
     }
     
     private func updateCurrentByteSizeForAllPolicies() {
-        if (self.diskCacheEnabled) {
-            for policy in self.cachePolicies.allPolicies() {
-                var fileDiskBytesUsed: UInt64 = 0
-                if let directoryContents = FileManager.contentsOfDirectory(path: policy.cacheFolder,
-                                                                           withFileExtension: self.fileExtension)  {
-                    for fileUrl in directoryContents {
-                        if let fileAttributes = try? fileUrl.resourceValues(forKeys: [.fileSizeKey]) {
-                            let fileSize = UInt64(fileAttributes.fileSize!)
-                            fileDiskBytesUsed += fileSize
-                        }
+        guard  self.diskCacheEnabled else { return }
+        for policy in self.cachePolicies.allPolicies() {
+            var fileDiskBytesUsed: UInt64 = 0
+            if let directoryContents = FileManager.contentsOfDirectory(path: policy.cacheFolder,
+                                                                       withFileExtension: self.fileExtension)  {
+                for fileUrl in directoryContents {
+                    if let fileAttributes = try? fileUrl.resourceValues(forKeys: [.fileSizeKey]) {
+                        let fileSize = UInt64(fileAttributes.fileSize!)
+                        fileDiskBytesUsed += fileSize
                     }
                 }
-                self.serialAccessQueue.sync {
-                    policy.bytesUsed = fileDiskBytesUsed
-                }
+            }
+            self.serialAccessQueue.sync {
+                policy.bytesUsed = fileDiskBytesUsed
             }
         }
     }
@@ -196,7 +194,7 @@ internal class DiskCache {
         }
     }
     
-    //MARK: - Public API
+    //MARK: - Internal API
     
     ///Returns the data for the request.
     internal func getCacheDataFor(request: NetworkRequest) -> Data? {
@@ -204,17 +202,15 @@ internal class DiskCache {
         
         let policy = self.cachePolicies.policy(forType: request.cachePolicyType)
         let requestKey = self.key(forRequest: request)
+        guard requestKey.isEmpty == false else { return nil }
         
-        if (requestKey.isEmpty == false) {
-            let fileName = requestKey + "." + self.fileExtension
-            let cachePath = policy.cacheFolder.appendingPathComponent(fileName)
-            if (FileManager.pathExists(path: cachePath) && self.doesCachedItem(atPath: cachePath, violateTTLFor: policy) == false) {
-                let data = try? Data.init(contentsOf: cachePath)
-                return data
-            }
+        let fileName = requestKey + "." + self.fileExtension
+        let cachePath = policy.cacheFolder.appendingPathComponent(fileName)
+        var data: Data? = nil
+        if (FileManager.pathExists(path: cachePath) && self.doesCachedItem(atPath: cachePath, violateTTLFor: policy) == false) {
+            data = try? Data.init(contentsOf: cachePath)
         }
-        
-        return nil
+        return data
     }
     
     ///Stores the data on disk for the request using the specified cache policy
@@ -244,7 +240,6 @@ internal class DiskCache {
         //Update bytes used.
         let fileSize = UInt64(data.count)
         _ = self.incrementBytesUsed(forPolicy: policy, bytes: fileSize)
-        //print("Cached \(fileSize) bytes  Total used \(self.bytesUsed) bytes for type \(policy.policyType.folderName)")
     }
     
     ///Clear the cache for a specific cache policy.

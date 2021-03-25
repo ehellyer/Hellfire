@@ -1,6 +1,6 @@
 {
   "name": "Hellfire",
-  "version": "0.1.7",
+  "version": "0.3.43",
   "summary": "Hellfire Network Lib",
   "description": "Hellfire is a lightweight and easy to use network lib that supports JSON serialization on complex custom types, optional/configurable response caching and reachability.",
   "homepage": "https://github.com/ehellyer/Hellfire",
@@ -13,7 +13,7 @@
   },
   "source": {
     "git": "https://github.com/ehellyer/Hellfire.git",
-    "tag": "0.1.7"
+    "tag": "0.3.43"
   },
   "platforms": {
     "ios": "10.0",
