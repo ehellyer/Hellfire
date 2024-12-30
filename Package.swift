@@ -26,6 +26,10 @@ let package = Package(
         .target(
             name: "Hellfire"
             , dependencies: []
+            , path: "Sources"
+            , linkerSettings: [
+                .linkedLibrary("sqlite3") // Link the SQLite3 system library
+            ]
 //            , swiftSettings: [
 //                .define("PRODUCTION", .when(configuration: .release)),
 //                .define("SANDBOX", .when(configuration: .debug))
@@ -38,7 +42,8 @@ let package = Package(
                           .process("TestData/UserContainer.json"),
                           .process("TestData/PersonArray.json"),
                           .process("TestData/Person.json"),
-                          .process("TestData/ProductsResponse.json")]
+                          .process("TestData/ProductsResponse.json"),
+                          .process("TestData/Dog.jpeg")]
         ),
     ]
 )

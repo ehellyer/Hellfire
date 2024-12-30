@@ -25,7 +25,7 @@ struct ProductElement: JSONSerializable {
     let category: Category
 }
 
-struct Category: Codable {
+struct Category: JSONSerializable {
     let id: Int?
     let name: String
     let image: String?

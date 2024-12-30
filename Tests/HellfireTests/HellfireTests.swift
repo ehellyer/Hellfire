@@ -16,6 +16,45 @@ final class HellfireTests: XCTestCase {
         //self.testBirthdayDate()
     }
     
+    
+    func testSuiteSQLite() {
+        let id = UUID()
+        let db = SQLiteManager()
+        self.testSQLiteInsert(id: id, db: db)
+        self.testSQLiteSelect(id: id, db: db)
+        self.testSQLiteDelete(id: id, db: db)
+    }
+    
+    func testSQLiteInsert(id: UUID, db: SQLiteManager) {
+        let requestItem = RequestItem(requestIdentifier: id, taskIdentifier: 1234, streamBodyURL: URL(string: "https://httpbin.org/get")!)
+        
+        do {
+            try db.insert(requestItem: requestItem)
+        } catch {
+            XCTFail(error.localizedDescription)
+        }
+    }
+    
+    func testSQLiteSelect(id: UUID, db: SQLiteManager) {
+        do {
+            if let requestItem = try db.fetchRequestItem(byId: id) {
+                print(requestItem)
+            } else {
+                XCTFail("Request item not found")
+            }
+        } catch {
+            XCTFail(error.localizedDescription)
+        }
+    }
+
+    func testSQLiteDelete(id: UUID, db: SQLiteManager) {
+        do {
+            try db.deleteRequestItem(byId: id)
+        } catch {
+            XCTFail(error.localizedDescription)
+        }
+    }
+    
     func testHash() {
         let md5 = MD5Hash()
         
@@ -216,7 +255,7 @@ final class HellfireTests: XCTestCase {
             XCTAssert(person.someOtherDate != nil, "Failed to decode someOtherDate")
         } catch {
             print(SessionInterface.sharedInstance.defaultJSONSerializableErrorHandler(error))
-            XCTFail("Failed to decode TaskPage to JSONData.")
+            XCTFail("Failed to decode Company from JSONData.")
         }
     }
     
@@ -245,7 +284,7 @@ final class HellfireTests: XCTestCase {
             let userContainer = try UserContainer.initialize(jsonData: jsonData)
             dump(userContainer)
         } catch {
-            
+            XCTFail("Failed to decode UserContainer from JSONData.")
         }
     }
     
@@ -263,7 +302,7 @@ final class HellfireTests: XCTestCase {
             XCTAssert(product != nil, "Failed to decode products")
         } catch {
             print(SessionInterface.sharedInstance.defaultJSONSerializableErrorHandler(error))
-            XCTFail("Failed to decode TaskPage to JSONData.")
+            XCTFail("Failed to decode [ProductElement] from JSONData.")
         }
     }
 }

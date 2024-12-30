@@ -8,11 +8,24 @@
 import Foundation
 
 /// This object is associated with the URLSessionTask so that the application can identify the task.
-public struct RequestItem {
+internal struct RequestItem: JSONSerializable {
     
-    /// Global unique identifier for the task, regardless of the session it is executing on.
-    public let identifier: RequestTaskIdentifier
+    init(requestIdentifier: RequestTaskIdentifier,
+         taskIdentifier: Int,
+         streamBodyURL: URL? = nil,
+         requestDate: Date = Date()) {
+        
+        self.requestIdentifier = requestIdentifier
+        self.taskIdentifier = taskIdentifier
+        self.streamBodyURL = streamBodyURL
+        self.requestDate = requestDate
+    }
     
-    /// The originating request.  The can be a downcast representation of the MultipartRequest, in which case this reference can be used to cleanup the request body if needed.
-    public let networkRequest: NetworkRequest
+    let requestIdentifier: RequestTaskIdentifier
+    
+    let taskIdentifier: Int
+    
+    let streamBodyURL: URL?
+    
+    let requestDate: Date
 }

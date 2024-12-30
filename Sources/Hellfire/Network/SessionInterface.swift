@@ -40,6 +40,7 @@ public class SessionInterface: NSObject {
     //MARK: - Private Property API
     
     private lazy var diskCache = DiskCache(config: DiskCacheConfiguration())
+    private lazy var db: SQLiteManager = SQLiteManager()
     private var backgroundSessionIdentifier: String
     
     private lazy var dataTaskSession: URLSession = {
@@ -236,13 +237,16 @@ public class SessionInterface: NSObject {
                 }
             })
             
-            let task = self.backgroundSession.uploadTask(with: urlRequest,
-                                                         fromFile: requestComponents.requestBody)
+            let task = self.backgroundSession.uploadTask(with: urlRequest, fromFile: requestComponents.requestBody)
+            
             let taskIdentifier = UUID()
-            task.requestItem = RequestItem(identifier: taskIdentifier, networkRequest: request)
-            task.taskDescription = taskIdentifier.uuidString
+            let requestItem = RequestItem(requestIdentifier: taskIdentifier,
+                                          taskIdentifier: task.taskIdentifier,
+                                          streamBodyURL: requestComponents.requestBody)
+            try self.db.insert(requestItem: requestItem)
+            task.taskDescription = requestItem.requestIdentifier.uuidString
             task.resume()
-            return taskIdentifier
+            return requestItem.requestIdentifier
         } catch (let error) {
             let serviceError = self.createServiceError(data: error.localizedDescription.data(using: .utf8),
                                                        statusCode: nil,
@@ -262,7 +266,7 @@ public class SessionInterface: NSObject {
     ///     - completion: The completion function to be called with the response.
     /// - Returns: `RequestTaskIdentifier`  Unique task identifier for the [URLSessionDataTask](apple-reference-documentation://ls%2Fdocumentation%2Ffoundation%2FURLSessionDataTask).  This identifier can be used to cancel the network request.
     public func execute(_ request: NetworkRequest,
-                        completion: @escaping DataTaskResult) -> RequestTaskIdentifier? {
+                        completion: @escaping DataTaskResult) throws -> RequestTaskIdentifier? {
         if let cachedResponse = hasCachedResponse(forRequest: request) {
             DispatchQueue.main.async {
                 let dataResponse = DataResponse(headers: [HTTPHeader(name: "CachedResponse", value: "true")],
@@ -284,8 +288,10 @@ public class SessionInterface: NSObject {
         }
         
         let taskIdentifier = UUID()
-        task.requestItem = RequestItem(identifier: taskIdentifier, networkRequest: request)
-        task.taskDescription = taskIdentifier.uuidString
+        let requestItem = RequestItem(requestIdentifier: taskIdentifier,
+                                      taskIdentifier: task.taskIdentifier)
+        try self.db.insert(requestItem: requestItem)
+        task.taskDescription = requestItem.requestIdentifier.uuidString
         task.resume()
         return taskIdentifier
     }
@@ -299,7 +305,7 @@ public class SessionInterface: NSObject {
     ///     - completion: The completion function to be called with the response.
     /// - Returns: `RequestTaskIdentifier`  Unique task identifier for the [URLSessionDataTask](apple-reference-documentation://ls%2Fdocumentation%2Ffoundation%2FURLSessionDataTask).  This identifier can be used to cancel the network request.
     public func execute<T: JSONSerializable>(_ request: NetworkRequest,
-                                             completion: @escaping JSONTaskResult<T>) -> RequestTaskIdentifier? {
+                                             completion: @escaping JSONTaskResult<T>) throws -> RequestTaskIdentifier? {
         
         if let cachedResponse = hasCachedResponse(forRequest: request), let jsonObject = try? T.initialize(jsonData: cachedResponse) {
             DispatchQueue.main.async {
@@ -322,10 +328,12 @@ public class SessionInterface: NSObject {
         }
         
         let taskIdentifier = UUID()
-        task.requestItem = RequestItem(identifier: taskIdentifier, networkRequest: request)
-        task.taskDescription = taskIdentifier.uuidString
+        let requestItem = RequestItem(requestIdentifier: taskIdentifier,
+                                       taskIdentifier: task.taskIdentifier)
+        try self.db.insert(requestItem: requestItem)
+        task.taskDescription = requestItem.requestIdentifier.uuidString
         task.resume()
-        return taskIdentifier
+        return  requestItem.requestIdentifier
     }
     
     /// Gets all the tasks currently running on the background session.
@@ -341,9 +349,9 @@ public class SessionInterface: NSObject {
     /// - Parameters:
     ///     - taskIdentifier: Unique task identifier for the URLSessionTask.
     public func cancelUploadRequest(taskIdentifier: RequestTaskIdentifier?) {
-        guard let taskId = taskIdentifier else { return }
+        guard let taskId = taskIdentifier?.uuidString else { return }
         self.backgroundSession.getAllTasks { (backgroundSessionTasks) in
-            if let task = backgroundSessionTasks.first(where: { $0.requestItem?.identifier == taskId }) {
+            if let task = backgroundSessionTasks.first(where: { $0.taskDescription == taskId }) {
                 task.cancel()
             }
         }
@@ -354,10 +362,10 @@ public class SessionInterface: NSObject {
     /// - Parameters:
     ///     - taskIdentifier: Unique task identifier for the URLSessionTask.
     public func cancelDataRequest(taskIdentifier: RequestTaskIdentifier?) {
-        guard let taskId = taskIdentifier else { return }
+        guard let taskId = taskIdentifier?.uuidString else { return }
         
         self.dataTaskSession.getAllTasks { (dataSessionTasks) in
-            if let task = dataSessionTasks.first(where: { $0.requestItem?.identifier == taskId }) {
+            if let task = dataSessionTasks.first(where: { $0.taskDescription == taskId }) {
                 task.cancel()
             }
         }
@@ -421,7 +429,13 @@ extension SessionInterface: URLSessionDataDelegate {
             self?.sessionDelegate?.backgroundTask(task, didCompleteWithResult: result)
         }
         
-        (task.requestItem?.networkRequest as? MultipartRequest)?.cleanUpHttpBody()
+        // Clean up
+        if let uuidString = task.taskDescription
+            , let requestTaskIdentifier = RequestTaskIdentifier(uuidString: uuidString)
+            , let requestItem = try? self.db.fetchRequestItem(byId: requestTaskIdentifier)
+            , let fileURL = requestItem.streamBodyURL {
+            try? FileManager.default.removeItem(at: fileURL)
+        }
     }
     
     public func urlSession(_ session: URLSession,

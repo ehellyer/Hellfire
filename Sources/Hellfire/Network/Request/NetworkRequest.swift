@@ -52,7 +52,7 @@ public class NetworkRequest {
     /// Gets the Request http body.   Default value is nil.
     public let body: Data?
     
-    /// Gets the headers set for this request.  These values are used after the delegate configures global request headers and so takes precedence.
+    /// Gets the headers set for this request.  These values are used after the delegate configures global request headers and so these headers take precedence over those set by the delegate.
     public let headers: [HTTPHeader]
 
     internal let dispatchToMain: Bool

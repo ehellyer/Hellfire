@@ -18,8 +18,8 @@ internal class DiskCache {
     
     internal init(config: DiskCacheConfiguration) {
         let appName = ProcessInfo.processInfo.processName
-        var cachePath = FileManager.default.urls(for: .cachesDirectory,
-                                                 in: .userDomainMask).first!.absoluteURL
+        var cachePath = self.fileManager.urls(for: .cachesDirectory,
+                                              in: .userDomainMask).first!.absoluteURL
         cachePath.appendPathComponent("HellfireDiskCache")
         cachePath.appendPathComponent(appName)
         self.cacheRootPath = cachePath
@@ -35,6 +35,7 @@ internal class DiskCache {
     
     private let fileExtension = "dkc"
     private lazy var hasher = MD5Hash()
+    private var fileManager = FileManager.default
     private var cacheRootPath: URL
     private lazy var cachePolicies = CachePolicies(cacheRootPath: self.cacheRootPath)
     private var diskCacheEnabled = true
@@ -103,8 +104,12 @@ internal class DiskCache {
             return true
         }
         var pathCreated = true
-        if (FileManager.pathExists(path: policy.cacheFolder) == false) {
-            pathCreated = FileManager.createWithIntermediateDirectories(path: policy.cacheFolder)
+        if (self.fileManager.pathExists(path: policy.cacheFolder) == false) {
+            do {
+                try self.fileManager.createWithIntermediateDirectories(path: policy.cacheFolder)
+            } catch {
+                pathCreated = false
+            }
         }
         return pathCreated
     }
@@ -129,12 +134,12 @@ internal class DiskCache {
     
     private func doesCachedItem(atPath filePath: URL, violateTTLFor policy: CachePolicy) -> Bool {
         var doesViolateTTL = false
-        if let attributes = try? FileManager.default.attributesOfItem(atPath: filePath.path),
+        if let attributes = try? self.fileManager.attributesOfItem(atPath: filePath.path),
            let fileCreatedDate = attributes[FileAttributeKey.creationDate] as? Date {
             let timeInterval = fileCreatedDate.timeIntervalSinceNow
             if (fabs(timeInterval) > TimeInterval(policy.ttlInSeconds)) {
                 doesViolateTTL = true
-                try? FileManager.default.removeItem(at: filePath)
+                try? self.fileManager.removeItem(at: filePath)
             }
         }
         return doesViolateTTL
@@ -142,7 +147,7 @@ internal class DiskCache {
     
     private func flushCacheFor(policy: CachePolicy) -> Bool {
         var success = false
-        try? FileManager.default.removeItem(at: policy.cacheFolder)
+        try? self.fileManager.removeItem(at: policy.cacheFolder)
         success = self.createFolder(forPolicy: policy)
         return success
     }
@@ -192,12 +197,13 @@ internal class DiskCache {
                 
                 //Remove files until we are within targetBytes
                 while sortedDirectoryContents.isEmpty == false && (targetBytes < self.getBytesUsed(forPolicy: policy)) {
+                    let fileManager = self.fileManager
                     autoreleasepool {
                         if let fileUrl = sortedDirectoryContents.first,
                            let fileAttributes = try? fileUrl.resourceValues(forKeys: [.fileSizeKey]),
                            let fileSize = fileAttributes.fileSize {
                             let fileSizeU64 = UInt64(fileSize)
-                            try? FileManager.default.removeItem(at: fileUrl)
+                            try? fileManager.removeItem(at: fileUrl)
                             _ = self.decrementBytesUsed(forPolicy: policy, bytes: fileSizeU64)
                         }
                         sortedDirectoryContents.removeFirst()
@@ -226,7 +232,7 @@ internal class DiskCache {
         let fileName = requestKey + "." + self.fileExtension
         let cachePath = policy.cacheFolder.appendingPathComponent(fileName)
         var data: Data? = nil
-        if (FileManager.pathExists(path: cachePath) && self.doesCachedItem(atPath: cachePath, violateTTLFor: policy) == false) {
+        if (self.fileManager.pathExists(path: cachePath) && self.doesCachedItem(atPath: cachePath, violateTTLFor: policy) == false) {
             data = try? Data.init(contentsOf: cachePath)
         }
         return data
@@ -258,13 +264,13 @@ internal class DiskCache {
         //Save the data
         let fileName = requestKey + "." + self.fileExtension
         let cachePath = policy.cacheFolder.appendingPathComponent(fileName)
-        if (FileManager.pathExists(path: policy.cacheFolder) == false) {
-            let _ = FileManager.createWithIntermediateDirectories(path: policy.cacheFolder)
+        if (self.fileManager.pathExists(path: policy.cacheFolder) == false) {
+            try? self.fileManager.createWithIntermediateDirectories(path: policy.cacheFolder)
         }
-        if (FileManager.pathExists(path: cachePath)) {
-            try? FileManager.default.removeItem(at: cachePath)
+        if (self.fileManager.pathExists(path: cachePath)) {
+            try? self.fileManager.removeItem(at: cachePath)
         }
-        FileManager.default.createFile(atPath: cachePath.path, contents: data, attributes: nil)
+        self.fileManager.createFile(atPath: cachePath.path, contents: data, attributes: nil)
         
         //Update bytes used.
         let fileSize = UInt64(data.count)

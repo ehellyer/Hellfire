@@ -42,15 +42,10 @@ public class MultipartRequest: NetworkRequest {
         do {
             try multipartFormData.writeEncodedData(to: _requestBodyURL)
         } catch {
-            self.cleanUpHttpBody()
+            try? self.fileManager.removeItem(at: _requestBodyURL)
             throw error
         }
         
         return (urlRequest: urlRequest, requestBody: _requestBodyURL)
-    }
-    
-    public func cleanUpHttpBody() {
-        guard let _requestBodyURL = self.requestBodyURL else { return }
-        try? self.fileManager.removeItem(at: _requestBodyURL)
     }
 }
