@@ -18,9 +18,16 @@ public enum HTTPCode: StatusCode, JSONSerializable {
     
     
     //MARK: - 1xx Informational
+    
+    /// The server has received the request headers and the client should proceed to send the request body.
     case `continue` = 100
+    
+    /// The requester has asked the server to switch protocols and the server is acknowledging that it will do so.
     case switchingProtocols = 101
+    
+    /// The server has received and is processing the request, but no response is available yet.
     case processing = 102
+    
     //105-199 Unassigned
     
     
@@ -65,35 +72,46 @@ public enum HTTPCode: StatusCode, JSONSerializable {
     /// If several ranges are sent back, the Content-Type is set to multipart/byte ranges and each fragment covers one range, with Content-Range and Content-Type describing it.
     case partialContent = 206
     
+    
+    /// Provides status for multiple independent operations in a single response.
     case multiStatus = 207
     
+    /// Indicates that members of a DAV binding have already been enumerated in a previous reply.
     case alreadyReported = 208
     
     //209-225 Unassigned
     
+    /// Indicates that the server has fulfilled a GET request for the resource and the response is a representation of the result of one or more instance-manipulations applied to the current instance.
     case imUsed = 226
-
     
     //MARK: - 3xx Redirection
     
+    /// 300 Multiple Choices — Request has multiple options; user-agent or user should choose one of them.
     case multipleChoices = 300
     
+    /// 301 Moved Permanently — Resource has been moved permanently to a new URI.
     case moved = 301
     
+    /// 302 Found — Resource is temporarily under a different URI.
     case found = 302
     
+    /// 303 See Other — Response to be retrieved from another URI using GET method.
     case method = 303
     
+    /// 304 Not Modified — Resource has not been modified since last requested.
     case notModified = 304
     
+    /// 305 Use Proxy — Resource must be accessed through the proxy given by the Location field.
     case useProxy = 305
     
     //306 Unassigned
     
+    /// 307 Temporary Redirect — Temporary redirection; method and body will not be changed.
     case temporaryRedirect = 307
     
+    /// 308 Permanent Redirect — Permanent redirection; method and body may be changed.
     case permanentRedirect = 308
-    
+
     //309-399 Unassigned
     
     
@@ -123,27 +141,37 @@ public enum HTTPCode: StatusCode, JSONSerializable {
     /// The requested resource is capable of generating only content not acceptable according to the Accept headers sent in the request.
     case notAcceptable = 406
     
+    /// 407 Proxy Authentication Required — Client must first authenticate itself with the proxy.
     case proxyAuthenticationRequired = 407
     
+    /// 408 Request Timeout — Server timed out waiting for the request.
     case requestTimeout = 408
     
+    /// 409 Conflict — Request could not be completed due to a conflict with the current state of the target resource.
     case conflict = 409
     
+    /// 410 Gone — Resource is no longer available and no forwarding address is known.
     case gone = 410
     
+    /// 411 Length Required — Request did not specify the length of its content, which is required.
     case lengthRequired = 411
     
     ///The 412 (Precondition Failed) status code indicates that one or more conditions given in the request header fields evaluated to false when tested on the server [RFC9110, Section 15.5.13](https://www.rfc-editor.org/rfc/rfc9110.html#name-412-precondition-failed)
     case preconditionFailed = 412
     
+    /// 413 Payload Too Large — Request entity is larger than limits defined by server.
     case payloadTooLarge = 413
     
+    /// 414 URI Too Long — URI provided was too long for the server to process.
     case uriTooLong = 414
     
+    /// 415 Unsupported Media Type — Request entity has a media type which is not supported.
     case unsupportedMediaType = 415
     
+    /// 416 Range Not Satisfiable — Client has asked for a portion of the file, but the server cannot supply that portion.
     case rangeNotSatisfiable = 416
     
+    /// 417 Expectation Failed — Expectation given in Expect header could not be met.
     case expectationFailed = 417
     
     /// I'm a teapot client error response code indicates that the server refuses to brew coffee because it is, permanently, a teapot.
@@ -161,8 +189,10 @@ public enum HTTPCode: StatusCode, JSONSerializable {
     /// The request was well-formed but was unable to be followed due to semantic errors.
     case unprocessableEntity = 422
 
+    /// 423 Locked — Resource that is being accessed is locked.
     case locked = 423
     
+    /// 424 Failed Dependency — Request failed due to failure of a previous request.
     case failedDependency = 424
     
     //case toEarly = 425
@@ -182,10 +212,12 @@ public enum HTTPCode: StatusCode, JSONSerializable {
 
     //430 Unassigned
     
+    /// 431 Request Header Fields Too Large — Server is unwilling to process the request because its header fields are too large.
     case requestHeaderFieldsTooLarge = 431
     
     //432-450 Unassigned
     
+    /// 451 Unavailable For Legal Reasons — Server is denying access to the resource due to legal reasons.
     case unavailableForLegalReasons = 451
     
     //452-499 Unassigned
@@ -193,26 +225,37 @@ public enum HTTPCode: StatusCode, JSONSerializable {
 
     //MARK: - 5xx Errors
     
+    /// 500 Internal Server Error — Server encountered an unexpected condition and cannot fulfill the request.
     case internalServerError = 500
     
+    /// 501 Not Implemented — Server does not support the functionality required to fulfill the request.
     case notImplemented = 501
     
+    /// 502 Bad Gateway — Server, while acting as a gateway or proxy, received an invalid response from the upstream server.
     case badGateway = 502
     
+    /// 503 Service Unavailable — Server is currently unable to handle the request due to overload or maintenance.
     case serviceUnavailable = 503
     
+    /// 504 Gateway Timeout — Server, while acting as a gateway or proxy, did not receive a timely response from the upstream server.
     case gatewayTimeout = 504
     
+    /// 505 HTTP Version Not Supported — Server does not support the HTTP protocol version used in the request.
     case httpVersionNotSupported = 505
     
+    /// 506 Variant Also Negotiates — Transparent content negotiation for the request results in a circular reference.
     case variantAlsoNegotiates = 506
     
+    /// 507 Insufficient Storage — Server is unable to store the representation needed to complete the request.
     case insufficientStorage = 507
     
+    /// 508 Loop Detected — Server detected an infinite loop while processing the request.
     case loopDetected = 508
     
+    /// 510 Not Extended — Further extensions to the request are required for the server to fulfill it.
     case notExtended = 510
     
+    /// 511 Network Authentication Required — Client needs to authenticate to gain network access.
     case networkAuthenticationRequired = 511
     
     //512-599 Unassigned

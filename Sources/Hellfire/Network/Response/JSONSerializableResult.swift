@@ -7,7 +7,8 @@
 
 import Foundation
 
-/// Represents a result of a NetworkRequest.
+/// Represents a result of a NetworkRequest where the response is automatically decoded into the specified type that conforms to `JSONSerializable`.
+/// A decoding error will result in a failure case, where the associated `ServiceError` contains the information needed to debug the reason for the decoding failure.
 public enum JSONSerializableResult<T: JSONSerializable> {
     
     /// Returns a NetworkResponse upon successful execution of a NetworkRequest.

@@ -29,9 +29,23 @@
 
 import Foundation
 
+/// A Swift implementation of the MD5 hashing algorithm.
+///
+/// This class computes a 128-bit MD5 hash of a UTF-8 encoded input string.
+/// It follows the RFC 1321 specification and is adapted from the original
+/// JavaScript implementation by Paul Johnston and SwiftHash by Khoa Pham.
+///
+/// ### Features:
+/// - Converts input strings to MD5 hash in hexadecimal form.
+/// - Implements full MD5 bitwise transformation logic.
+/// - Includes utility methods for endian conversion and bit manipulation.
+/// - Provides safe arithmetic handling with Int32 overflow support.
+///
+/// > MD5 is not recommended for cryptographic use due to known vulnerabilities.
+/// This implementation is intended for legacy compatibility or checksum purposes only.
 internal class MD5Hash {
     
-    //MARK: - Public API
+    //MARK: - Internal API
     
     /// Performs an MD5 hash on the Swift unicode input string and returns the resulting hash as a Swift unicode string.
     /// - Parameter input: The Swift unicode input string to be hashed using the MD5 algorithm.
@@ -51,22 +65,9 @@ internal class MD5Hash {
         return Array(input.utf8)
     }
     
-    /// Converts an array of C 'unsigned char' type 8 bit integers into unicode scalar Swift string.
-    /// - Parameter input: An array of C 'unsigned char' type 8 bit integers.
-    /// - Returns: A unicode scalar Swift string.
-    private func rstr2tr(_ input: [CUnsignedChar]) -> String {
-        var output: String = ""
-        
-        input.forEach {
-            output.append(String(Unicode.Scalar($0)))
-        }
-        
-        return output
-    }
-    
-    /// Convert a character byte array of unsigned 8-bit integers into Swift string.
-    /// - Parameter input: Convert a character byte array of unsigned 8-bit integers.
-    /// - Returns: A hexadecimal value of each input character is concatenated into a swift return string.
+    /// Converts a character byte array of unsigned 8-bit integers into a hexadecimal Swift string.
+    /// - Parameter input: Byte array to convert.
+    /// - Returns: A string where each byte is represented by two hexadecimal characters.
     private func rstr2hex(_ input: [CUnsignedChar]) -> String {
         let hexTab: [Character] = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"]
         var output: [Character] = []
@@ -83,8 +84,10 @@ internal class MD5Hash {
         return String(output)
     }
     
-    // Convert a raw string to an array of little-endian words
-    // Characters >255 have their high-byte silently ignored.
+    /// Converts a byte array into an array of 32-bit little-endian words.
+    /// Characters with values >255 have their high byte ignored.
+    /// - Parameter input: Byte array input.
+    /// - Returns: Array of 32-bit integers.
     private func rstr2binl(_ input: [CUnsignedChar]) -> [Int32] {
         var output: [Int: Int32] = [:]
         
@@ -97,7 +100,9 @@ internal class MD5Hash {
         return dictionary2array(output)
     }
     
-    // Convert an array of little-endian words to a string
+    /// Converts an array of 32-bit little-endian integers into a byte array.
+    /// - Parameter input: Array of 32-bit words.
+    /// - Returns: Byte array representation of input data.
     private func binl2rstr(_ input: [Int32]) -> [CUnsignedChar] {
         var output: [CUnsignedChar] = []
         
@@ -109,58 +114,88 @@ internal class MD5Hash {
         return output
     }
     
-    /// Returns a character byte array of unsigned 8-bit integers that represents the hash of the input array.
-    /// - Parameter input: A character byte array of unsigned 8-bit integers to be hashed
-    /// - Returns: A character byte array of unsigned 8-bit integers
+    /// Hashes a byte array using the MD5 algorithm.
+    /// - Parameter input: Byte array to hash.
+    /// - Returns: Byte array representing the MD5 hash.
     private func rstr_md5(_ input: [CUnsignedChar]) -> [CUnsignedChar] {
         return binl2rstr(binl_md5(rstr2binl(input), input.count * 8))
     }
     
-    
-    /// Returns the sum of the two given values, wrapping the result in case of any overflow, as a signed Int32.
-    ///
-    /// The safe addition function discards any bits that overflow the 32 bit integer type.
-    ///
+    /// Performs the MD5 transformation with the common function used by all four rounds.
     /// - Parameters:
-    ///   - x: Int32 input
-    ///   - y: Int32 input
-    /// - Returns: Returns Int32 result.
-    private func safe_add(_ x: Int32, _ y: Int32) -> Int32 {
-        return x &+ y
-    }
-    
-    // Bitwise rotate a 32-bit number to the left.
-    private func bit_rol(_ num: Int32, _ cnt: Int32) -> Int32 {
-        // num >>>
-        return (num << cnt) | zeroFillRightShift(num, (32 - cnt))
-    }
-    
-    
-    // These funcs implement the four basic operations the algorithm uses.
+    ///   - q: Result of a nonlinear function specific to each round.
+    ///   - a: Current value of the A register.
+    ///   - b: Current value of the B register.
+    ///   - x: Current block input.
+    ///   - s: Number of bits to rotate left.
+    ///   - t: Constant derived from the sine function.
+    /// - Returns: Updated value of the A register after transformation.
     private func md5_cmn(_ q: Int32, _ a: Int32, _ b: Int32, _ x: Int32, _ s: Int32, _ t: Int32) -> Int32 {
         return safe_add(bit_rol(safe_add(safe_add(a, q), safe_add(x, t)), s), b)
     }
     
+    /// Round 1 of the MD5 transformation.
+    /// - Parameters:
+    ///   - a: Register A of the MD5 algorithm.
+    ///   - b: Register B of the MD5 algorithm.
+    ///   - c: Register C of the MD5 algorithm.
+    ///   - d: Register D of the MD5 algorithm.
+    ///   - x: The current 32-bit word of the message block.
+    ///   - s: Number of bits to rotate left.
+    ///   - t: Constant derived from the sine function.
+    /// - Returns: Updated value of the A register.
     private func md5_ff(_ a: Int32, _ b: Int32, _ c: Int32, _ d: Int32, _ x: Int32, _ s: Int32, _ t: Int32) -> Int32 {
         return md5_cmn((b & c) | ((~b) & d), a, b, x, s, t)
     }
     
+    /// Round 2 of the MD5 transformation.
+    /// - Parameters:
+    ///   - a: Register A of the MD5 algorithm.
+    ///   - b: Register B of the MD5 algorithm.
+    ///   - c: Register C of the MD5 algorithm.
+    ///   - d: Register D of the MD5 algorithm.
+    ///   - x: The current 32-bit word of the message block.
+    ///   - s: Number of bits to rotate left.
+    ///   - t: Constant derived from the sine function.
+    /// - Returns: Updated value of the A register.
     private func md5_gg(_ a: Int32, _ b: Int32, _ c: Int32, _ d: Int32, _ x: Int32, _ s: Int32, _ t: Int32) -> Int32 {
         return md5_cmn((b & d) | (c & (~d)), a, b, x, s, t)
     }
     
+    /// Round 3 of the MD5 transformation.
+    /// - Parameters:
+    ///   - a: Register A of the MD5 algorithm.
+    ///   - b: Register B of the MD5 algorithm.
+    ///   - c: Register C of the MD5 algorithm.
+    ///   - d: Register D of the MD5 algorithm.
+    ///   - x: The current 32-bit word of the message block.
+    ///   - s: Number of bits to rotate left.
+    ///   - t: Constant derived from the sine function.
+    /// - Returns: Updated value of the A register.
     private func md5_hh(_ a: Int32, _ b: Int32, _ c: Int32, _ d: Int32, _ x: Int32, _ s: Int32, _ t: Int32) -> Int32 {
         return md5_cmn(b ^ c ^ d, a, b, x, s, t)
     }
     
+    /// Round 4 of the MD5 transformation.
+    /// - Parameters:
+    ///   - a: Register A of the MD5 algorithm.
+    ///   - b: Register B of the MD5 algorithm.
+    ///   - c: Register C of the MD5 algorithm.
+    ///   - d: Register D of the MD5 algorithm.
+    ///   - x: The current 32-bit word of the message block.
+    ///   - s: Number of bits to rotate left.
+    ///   - t: Constant derived from the sine function.
+    /// - Returns: Updated value of the A register.
     private func md5_ii(_ a: Int32, _ b: Int32, _ c: Int32, _ d: Int32, _ x: Int32, _ s: Int32, _ t: Int32) -> Int32 {
         return md5_cmn(c ^ (b | (~d)), a, b, x, s, t)
     }
     
-    
-    // Calculate the MD5 of an array of little-endian words, and a bit length.
+    /// Main MD5 transformation algorithm operating on blocks.
+    /// - Parameters:
+    ///   - input: Array of 32-bit integers representing the input data of little-endian words.
+    ///   - len: Length of the original message in bits.
+    /// - Returns: Array of 32-bit integers representing the MD5 hash.
     private func binl_md5(_ input: [Int32], _ len: Int) -> [Int32] {
-        /* append padding */
         
         var x: [Int: Int32] = [:]
         for (index, value) in input.enumerated() {
@@ -262,12 +297,18 @@ internal class MD5Hash {
         return [a, b, c, d]
     }
     
-    //MARK: - Private API Helper funcs
+    //MARK: - Private API - Helper funcs
     
+    /// Returns the maximum index key plus one as the length of the dictionary.
+    /// - Parameter dictionary: Dictionary with integer keys.
+    /// - Returns: Maximum index + 1.
     private func length(_ dictionary: [Int: Int32]) -> Int {
         return (dictionary.keys.max() ?? 0) + 1
     }
     
+    /// Converts a dictionary of indexed values to an array, filling in missing values with zero.
+    /// - Parameter dictionary: Dictionary to convert.
+    /// - Returns: Array of Int32.
     private func dictionary2array(_ dictionary: [Int: Int32]) -> [Int32] {
         var array = Array<Int32>(repeating: 0, count: dictionary.keys.count)
         
@@ -278,12 +319,41 @@ internal class MD5Hash {
         return array
     }
     
+    /// Safely unwraps an optional Int32 or returns the fallback.
+    /// - Parameters:
+    ///   - value: Optional Int32.
+    ///   - fallback: Fallback value if nil. Default is 0.
+    /// - Returns: Unwrapped value or fallback.
     private func unwrap(_ value: Int32?, _ fallback: Int32 = 0) -> Int32 {
         return value ?? fallback
     }
     
+    /// Performs a logical right shift (zero-fill) on a signed 32-bit integer.
+    /// - Parameters:
+    ///   - num: Number to shift.
+    ///   - count: Number of bits to shift.
+    /// - Returns: Result of logical right shift.
     private func zeroFillRightShift(_ num: Int32, _ count: Int32) -> Int32 {
         let value = UInt32(bitPattern: num) >> UInt32(bitPattern: count)
         return Int32(bitPattern: value)
+    }
+    
+    /// Performs a safe addition of two 32-bit integers, handling overflow.
+    /// - Parameters:
+    ///   - x: First 32-bit integer.
+    ///   - y: Second 32-bit integer.
+    /// - Returns: The sum of x and y.
+    private func safe_add(_ x: Int32, _ y: Int32) -> Int32 {
+        return x &+ y
+    }
+    
+    /// Performs a bitwise rotate left on a 32-bit integer.
+    /// - Parameters:
+    ///   - num: The integer to rotate.
+    ///   - cnt: The number of bits to rotate left.
+    /// - Returns: The result of the left rotation.
+    private func bit_rol(_ num: Int32, _ cnt: Int32) -> Int32 {
+        // num >>>
+        return (num << cnt) | zeroFillRightShift(num, (32 - cnt))
     }
 }

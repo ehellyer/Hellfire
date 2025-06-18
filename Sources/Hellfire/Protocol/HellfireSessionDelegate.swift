@@ -52,7 +52,7 @@ public protocol HellfireSessionDelegate: AnyObject {
     ///   - requestTaskIdentifier: Unique task identifier for the URLSessionTask.
     ///   - result: Represents the success or failure result of a `NetworkRequest`.
     func backgroundTask(_ task: URLSessionTask,
-                        didCompleteWithResult result: DataResult)
+                        didCompleteWithResult result: RequestResult)
     
     /// Sent periodically to notify the delegate of upload progress.  This information is also available as properties of the task.
     /// - Parameters:
@@ -127,7 +127,7 @@ public extension HellfireSessionDelegate {
                  didReceive data: Data) { }
     
     func backgroundTask(_ task: URLSessionTask,
-                        didCompleteWithResult result: DataResult) { }
+                        didCompleteWithResult result: RequestResult) { }
     
     func backgroundTask(_ task: URLSessionTask,
                         didSendBytes bytesSent: Int64,

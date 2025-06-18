@@ -1,9 +1,9 @@
 //
 //  Person.swift
-//  Hellfire_Example
+//  Hellfire
 //
 //  Created by Ed Hellyer on 9/2/19.
-//  Copyright © 2019 CocoaPods. All rights reserved.
+//  Copyright © 2019 Ed Hellyer. All rights reserved.
 //
 
 import Foundation
@@ -29,7 +29,7 @@ struct Person: JSONSerializable {
     var appointmentTime: Date?
     
     /// Optionally, encoded to and decoded from this format "yyyy-MM-dd'T'HH:mm:ss".
-    @OptionalCoding<CodingUses<ISO8601NoMillisecondsNoTZDateFormatter>>
+    @OptionalCoding<CodingUses<ISO8601NoTZCodable>>
     var someOtherDate: Date?
 }
 

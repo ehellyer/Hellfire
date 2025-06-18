@@ -11,11 +11,11 @@ import Foundation
 public typealias RequestTaskIdentifier = UUID
 public typealias ServiceErrorHandler = (ServiceError) -> Void
 public typealias JSONTaskResult<T: JSONSerializable> = (JSONSerializableResult<T>) -> Void
-public typealias DataTaskResult = (DataResult) -> Void
+public typealias DataTaskResult = (RequestResult) -> Void
 
-/// Only one instance per session should be created.
+/// Multiple instances can be created, each with there own session and session delegate.
 ///
-/// Be aware that DiskCache storage, data task URLSession and background URLSession are shared between multiple SessionInterface instances.
+/// Be aware that DiskCache storage are shared between multiple SessionInterface instances.
 /// Concerning DiskCache, although a unique hash insertion key will be created, storage will be shared between the instances.
 public class SessionInterface: NSObject {
     
@@ -39,7 +39,19 @@ public class SessionInterface: NSObject {
     
     //MARK: - Private Property API
     
-    private lazy var diskCache = DiskCache(config: DiskCacheConfiguration())
+    private lazy var diskCache: DiskCacheStore = {
+        let processInfo = ProcessInfo.processInfo
+        let appName = processInfo.processName
+        var cacheURL = FileManager.default.urls(for: FileManager.SearchPathDirectory.cachesDirectory,
+                                                in: FileManager.SearchPathDomainMask.userDomainMask).first!
+        cacheURL.append(component: "HellfireDiskCache")
+        cacheURL.append(component: appName)
+        
+        let dcs = DiskCacheStore(rootPath: cacheURL,
+                                 configuration: DiskCacheConfiguration())
+        return dcs
+    }()
+        
     private lazy var db: SQLiteManager = SQLiteManager()
     private var backgroundSessionIdentifier: String
     
@@ -48,7 +60,8 @@ public class SessionInterface: NSObject {
         configuration.httpAdditionalHeaders = self.defaultRequestHeaders
         configuration.requestCachePolicy = .reloadIgnoringCacheData
         configuration.urlCache = nil
-        let urlSession = URLSession(configuration: configuration)
+        configuration.shouldUseExtendedBackgroundIdleMode = true
+        let urlSession = URLSession(configuration: configuration, delegate: self, delegateQueue: nil)
         return urlSession
     }()
     
@@ -113,7 +126,7 @@ public class SessionInterface: NSObject {
     
     private func urlRequest(fromNetworkRequest request: NetworkRequest) -> URLRequest {
         var urlRequest = URLRequest(url: request.url)
-        urlRequest.httpMethod = request.method.name
+        urlRequest.httpMethod = request.method.urlRequestMethod
         urlRequest.httpBody = request.body
         urlRequest.timeoutInterval = request.timeoutInterval
         
@@ -131,7 +144,7 @@ public class SessionInterface: NSObject {
     }
     
     private func hasCachedResponse(forRequest request: NetworkRequest) -> Data? {
-        if request.cachePolicyType != CachePolicyType.doNotCache, let response = self.diskCache.getCacheDataFor(request: request) {
+        if request.cachePolicyType != CachePolicyType.doNotCache, let response = self.diskCache.load(for: request) {
             return response
         }
         return nil
@@ -147,7 +160,7 @@ public class SessionInterface: NSObject {
         self.sendToDelegate(responseHeaders: responseHeaders, forRequest: request)
         
         if error == nil, HTTPCode.isOk(statusCode), let responseData = data {
-            self.diskCache.cache(data: responseData, forRequest: request)
+            self.diskCache.store(responseData, for: request)
         }
         
         //Call completion block
@@ -189,7 +202,7 @@ public class SessionInterface: NSObject {
                                                                    statusCode: statusCode,
                                                                    jsonObject: jsonObject)
                     if let responseData = data {
-                        self.diskCache.cache(data: responseData, forRequest: request)
+                        self.diskCache.store(responseData, for: request)
                     }
                     completion(.success(dataResponse))
                 } catch {
@@ -253,7 +266,7 @@ public class SessionInterface: NSObject {
                                                        error: error,
                                                        requestURL: request.url)
             
-            throw HellfireError.ServiceRequestError.unableToCreateTask(result: DataResult.failure(serviceError))
+            throw HellfireError.ServiceRequestError.unableToCreateTask(result: RequestResult.failure(serviceError))
         }
     }
     
@@ -336,6 +349,7 @@ public class SessionInterface: NSObject {
         return  requestItem.requestIdentifier
     }
     
+        
     /// Gets all the tasks currently running on the background session.
     /// - Parameter completion: Returns a tuple of three arrays via an asynchronous completion block. ([URLSessionDataTask], [URLSessionUploadTask], [URLSessionDownloadTask])
     public func getBackgroundTasks(completion: @escaping ([URLSessionDataTask], [URLSessionUploadTask], [URLSessionDownloadTask]) -> Void) {
@@ -383,13 +397,13 @@ public class SessionInterface: NSObject {
     
     /// Clears all cached data for any instance of ServiceInterface.
     public func clearCache() {
-        self.diskCache.clearCache()
+        self.diskCache.clearAll()
     }
     
     /// Clears cached data for the specified cache policy type only
     /// - Parameter policyType: The cache bucket that is to be cleared.
     public func clearCache(policyType: CachePolicyType) {
-        self.diskCache.clearCache(policyType: policyType)
+        self.diskCache.clear(for: policyType)
     }
 }
 
@@ -410,7 +424,7 @@ extension SessionInterface: URLSessionDataDelegate {
                            didCompleteWithError error: Error?) {
         let statusCode = self.statusCodeForResponse(task.response)
         let responseHeaders: [HTTPHeader] = self.httpHeadersFrom(task.response)
-        var result: DataResult
+        var result: RequestResult
         
         if HTTPCode.isOk(statusCode) {
             let dataResponse = DataResponse(headers: responseHeaders,
@@ -486,7 +500,7 @@ extension SessionInterface: URLSessionDelegate {
     
     public func urlSession(_ session: URLSession,
                            didReceive challenge: URLAuthenticationChallenge,
-                           completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+                           completionHandler: @escaping @Sendable (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         guard let sessionDelegate =  self.sessionDelegate else {
             completionHandler(.performDefaultHandling, nil)
             return

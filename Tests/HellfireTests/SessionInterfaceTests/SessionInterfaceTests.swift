@@ -32,7 +32,7 @@ final class SessionInterfaceTests: XCTestCase {
             }
             expectation.fulfill()
         }
-        waitForExpectations(timeout: 20)
+        waitForExpectations(timeout: 10)
     }
     
     func testJSONTask() throws {
@@ -50,7 +50,7 @@ final class SessionInterfaceTests: XCTestCase {
             
             expectation.fulfill()
         }
-        waitForExpectations(timeout: 20)
+        waitForExpectations(timeout: 10)
     }
 
     
@@ -116,7 +116,7 @@ extension SessionInterfaceTests: HellfireSessionDelegate {
     }
     
     func backgroundTask(_ task: URLSessionTask,
-                        didCompleteWithResult result: DataResult) {
+                        didCompleteWithResult result: RequestResult) {
         print("Completed background tasks")
     }
     

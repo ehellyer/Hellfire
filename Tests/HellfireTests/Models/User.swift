@@ -1,9 +1,9 @@
 //
 //  User.swift
-//  Hellfire_Example
+//  Hellfire
 //
 //  Created by Ed Hellyer on 9/2/19.
-//  Copyright © 2019 CocoaPods. All rights reserved.
+//  Copyright © 2019 Ed Hellyer. All rights reserved.
 //
 
 import Foundation

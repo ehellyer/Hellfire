@@ -8,38 +8,69 @@
 
 import Foundation
 
-internal extension FileManager {
+protocol FileManaging {
     
-    ///Creates the directory path tree, returns true for success and false for failure.
-    func createWithIntermediateDirectories(path: URL) throws {
-        try self.createDirectory(atPath: path.path, withIntermediateDirectories: true, attributes: nil)
+    /// Creates a directory if it doesn't already exist.
+    func createDirectoryIfNeeded(at path: URL) throws
+
+    /// Creates the file at the specified path with the contents.
+    func createFile(at path: URL, contents: Data) throws
+
+    /// Removes the item at the specified path.
+    func removeItem(at path: URL) throws
+    
+    /// Checks if a file exists at the specified path.
+    func fileExists(at path: URL) -> Bool
+    
+    /// Returns the contents of a directory filtered by file extension.
+    func contentsOfDirectory(at path: URL, withExtension: String) -> [URL]
+    
+    /// Returns the attributes of a file at a given path.
+    func attributesOfItem(at path: URL) -> [FileAttributeKey: Any]?
+}
+
+
+extension FileManager: FileManaging {
+       
+    func createDirectoryIfNeeded(at url: URL) throws {
+        if !self.fileExists(at: url) {
+            try self.createDirectory(atPath: url.path, withIntermediateDirectories: true, attributes: nil)
+        }
+    }
+
+    func createFile(at path: URL, contents: Data) throws {
+        guard createFile(atPath: path.path, contents: contents, attributes: nil) else {
+            throw NSError(domain: "FileManager+Extension", code: 1, userInfo: nil)
+        }
     }
     
-    ///Returns true if the directory or file specified by the url exists else returns false.
-    func pathExists(path: URL) -> Bool {
+    func removeItem(at url: URL) throws {
+        try self.removeItem(atPath: url.path)
+    }
+    
+    func fileExists(at path: URL) -> Bool {
         var isPathValid = false
         isPathValid = self.fileExists(atPath: path.path)
         return isPathValid
     }
     
-    func createDirectoryIfNeeded(at url: URL) throws {
-        if !self.pathExists(path: url) {
-            try self.createWithIntermediateDirectories(path: url)
-        }
-    }
-    
     ///Returns the contents of the specified directory, will ignore hidden files, sub directories and package contents.  Response includes .fileSizeKey and .createdDate properties.
-    class func contentsOfDirectory(path: URL, withFileExtension fileExtension: String = "") -> [URL]? {
-        var filteredContents: [URL]? = nil
+    func contentsOfDirectory(at path: URL, withExtension fileExtension: String) -> [URL] {
         let propertyKeys: [URLResourceKey] = [.creationDateKey,
                                               .fileSizeKey]
+
         let options: FileManager.DirectoryEnumerationOptions = [.skipsSubdirectoryDescendants,
                                                                 .skipsHiddenFiles,
                                                                 .skipsPackageDescendants]
-        let directoryContents = try? FileManager.default.contentsOfDirectory(at: path,
-                                                                             includingPropertiesForKeys: propertyKeys,
-                                                                             options: options)
-        filteredContents = fileExtension.isEmpty ? directoryContents : directoryContents?.filter { $0.pathExtension == fileExtension }
-        return filteredContents
+        
+        guard let contents = try? contentsOfDirectory(at: path, includingPropertiesForKeys: propertyKeys, options: options) else {
+            return []
+        }
+        
+        return contents.filter { $0.pathExtension == fileExtension }
+    }
+    
+    func attributesOfItem(at path: URL) -> [FileAttributeKey : Any]? {
+        return try? attributesOfItem(atPath: path.path)
     }
 }

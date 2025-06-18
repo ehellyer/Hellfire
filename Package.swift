@@ -1,13 +1,13 @@
-// swift-tools-version:5.6
+// swift-tools-version:5.9
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
 
 let package = Package(
     name: "Hellfire",
-    platforms: [.macOS(PackageDescription.SupportedPlatform.MacOSVersion.v12),
-                .iOS(PackageDescription.SupportedPlatform.IOSVersion.v15),
-                .tvOS(PackageDescription.SupportedPlatform.TVOSVersion.v15)
+    platforms: [.macOS(PackageDescription.SupportedPlatform.MacOSVersion.v14),
+                .iOS(PackageDescription.SupportedPlatform.IOSVersion.v16),
+                .tvOS(PackageDescription.SupportedPlatform.TVOSVersion.v16)
     ],
     products: [
         // Products define the executables and libraries produced by a package, and make them visible to other packages.

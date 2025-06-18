@@ -47,7 +47,7 @@ public enum HellfireError: Error {
     
     /// The URLSessionTask was unable to be created.  Specific reasons, if known, will be in the ServiceError response.
     public enum ServiceRequestError: Error {
-        case unableToCreateTask(result: DataResult)
+        case unableToCreateTask(result: RequestResult)
     }
     
     /// An asynchronous task has been canceled.

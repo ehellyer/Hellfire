@@ -81,10 +81,10 @@ extension HTTPHeader {
         }
         
         ///Returns a `content-type` header with `application/json` string value.
-        public static var applicationJSON = HTTPHeader(name: "content-type", value: "application/json")
+        public static let applicationJSON = HTTPHeader(name: "content-type", value: "application/json")
         
         ///Returns a `content-type` header with `application/octet-stream` string value.
-        public static var octetStream = HTTPHeader(name: "content-type", value: "application/octet-stream")
+        public static let octetStream = HTTPHeader(name: "content-type", value: "application/octet-stream")
     }
     
     ///Returns a `ContentLength` header with the specified string value.
@@ -113,7 +113,7 @@ extension HTTPHeader {
         HTTPHeader(name: "User-Agent", value: value)
     }
 
-    ///Returns the header as a string as used by a request.
+    ///Returns the header as a `String` as used by a request in the format of <name>: <value>.
     public var stringEncoding: String {
         return "\(self.name): \(self.value)"
     }

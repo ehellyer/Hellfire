@@ -234,11 +234,6 @@ fileprivate struct ISO8601DateFormatter {
 
 public enum JSONSerializableError: Error {
     
-    public enum customDecodableError: Error {
-        case keyNotFound(message: String)
-        case notImplemented(message: String)
-    }
-    
     public enum encodingError: Error {
         case invalidValue(message: String)
         case exception(message: String)

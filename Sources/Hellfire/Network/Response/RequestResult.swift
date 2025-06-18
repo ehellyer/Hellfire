@@ -1,5 +1,5 @@
 //
-//  DataResult.swift
+//  RequestResult.swift
 //  Hellfire
 //
 //  Created by Ed Hellyer on 10/3/21.
@@ -8,7 +8,7 @@
 import Foundation
 
 /// Represents a result of a NetworkRequest.
-public enum DataResult {
+public enum RequestResult {
     
     /// Returns a NetworkResponse upon successful execution of a NetworkRequest.
     /// - success: has an associated object of type NetworkResponse.

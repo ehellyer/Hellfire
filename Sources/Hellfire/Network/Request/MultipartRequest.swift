@@ -26,7 +26,7 @@ public class MultipartRequest: NetworkRequest {
     
     public func build() throws -> (urlRequest: URLRequest, requestBody: URL) {
         var urlRequest = URLRequest(url: url)
-        urlRequest.httpMethod = self.method.name
+        urlRequest.httpMethod = self.method.urlRequestMethod
         urlRequest.setValue(self.multipartFormData.contentType.value,
                             forHTTPHeaderField: self.multipartFormData.contentType.name)
         urlRequest.setValue(self.multipartFormData.contentLength.value,

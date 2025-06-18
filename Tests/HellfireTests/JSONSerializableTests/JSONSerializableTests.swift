@@ -1,94 +1,14 @@
 import XCTest
 @testable import Hellfire
 
-final class HellfireTests: XCTestCase {
-    
-    static var allTests = [
-        ("testSuite", testSuite),
-    ]
-    
-    
-    func testSuite() {
-        //print(HTTPHeader.defaultUserAgent)
-        //self.hashTest()
-        //self.stressTestDiskCache()
-        //self.testPerson()
-        //self.testBirthdayDate()
-    }
-    
-    
-    func testSuiteSQLite() {
-        let id = UUID()
-        let db = SQLiteManager()
-        self.testSQLiteInsert(id: id, db: db)
-        self.testSQLiteSelect(id: id, db: db)
-        self.testSQLiteDelete(id: id, db: db)
-    }
-    
-    func testSQLiteInsert(id: UUID, db: SQLiteManager) {
-        let requestItem = RequestItem(requestIdentifier: id, taskIdentifier: 1234, streamBodyURL: URL(string: "https://httpbin.org/get")!)
-        
-        do {
-            try db.insert(requestItem: requestItem)
-        } catch {
-            XCTFail(error.localizedDescription)
-        }
-    }
-    
-    func testSQLiteSelect(id: UUID, db: SQLiteManager) {
-        do {
-            if let requestItem = try db.fetchRequestItem(byId: id) {
-                print(requestItem)
-            } else {
-                XCTFail("Request item not found")
-            }
-        } catch {
-            XCTFail(error.localizedDescription)
-        }
-    }
+final class JSONSerializableTests: XCTestCase {
 
-    func testSQLiteDelete(id: UUID, db: SQLiteManager) {
-        do {
-            try db.deleteRequestItem(byId: id)
-        } catch {
-            XCTFail(error.localizedDescription)
-        }
+    override func setUpWithError() throws {
+        // Put setup code here. This method is called before the invocation of each test method in the class.
     }
     
-    func testHash() {
-        let md5 = MD5Hash()
-        
-        for _ in 1 ... 1000 {
-            let hash = md5.MD5(String.randomString(length: 5))
-            let control = md5.MD5("Control string - Generate Same Hash")
-            print (hash, control)
-            XCTAssert(hash != control, "Incredible unexpected situation. Somehow you got a matching hash.")
-        }
-    }
-    
-    func stressTestDiskCache() {
-        let config = DiskCacheConfiguration(settings: [CachePolicyType.hour: 1000,
-                                                       .fourHours: 1000,
-                                                       .day: 1000,
-                                                       .week: 1000,
-                                                       .month: 1000,
-                                                       .untilSpaceNeeded: 1000])
-        
-        
-        let dc = DiskCache(config: config)
-        dc.clearCache()
-        
-        for i in 10000000...10006000 {
-            autoreleasepool {
-                let data = "\(i)".data(using: .utf8)!
-                let request1 = NetworkRequest(url: URL(string: "https://www.apple.com/\(i)")!, method: .get, cachePolicyType: .hour, body: data)
-                let request2 = NetworkRequest(url: URL(string: "https://www.apple.com/\(i)")!, method: .get, cachePolicyType: .day, body: data)
-                let request3 = NetworkRequest(url: URL(string: "https://www.apple.com/\(i)")!, method: .get, cachePolicyType: .week, body: data)
-                let _ = dc.cache(data: data, forRequest: request1)
-                let _ = dc.cache(data: data, forRequest: request2)
-                let _ = dc.cache(data: data, forRequest: request3)
-            }
-        }
+    override func tearDownWithError() throws {
+        // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
     
     //MARK: - Testing JSONSerializable - EmptyObject Decoding
@@ -260,7 +180,7 @@ final class HellfireTests: XCTestCase {
     }
     
     func testPropertyWrapper() {
-        guard let path = Bundle.module.url(forResource: "Company", withExtension: "json") else {
+        guard let path = Bundle.module.url(forResource: "UserContainer", withExtension: "json") else {
             XCTFail("Failed to read JSONData from file.")
             return
         }
