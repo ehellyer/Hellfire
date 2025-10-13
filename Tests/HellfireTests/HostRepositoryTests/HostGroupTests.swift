@@ -18,77 +18,89 @@ final class HostGroupTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
     
-    private func makeEnvironment(_ id: String) -> Environment {
-        Environment(id: id, description: nil)
+    private let dev = Environment(id: "dev")
+    private let test = Environment(id: "test")
+    private let prod = Environment(id: "prod")
+    
+    private var devHost: Hellfire.Host {
+        Hellfire.Host(protocol: .https, host: "dev.api.com")
     }
     
-    private func makeHost(envId: String, url: String) -> HostConfiguration {
-        HostConfiguration(
-            environment: makeEnvironment(envId),
-            protocol: .https,
-            host: url
-        )
+    private var prodHost: Hellfire.Host {
+        Hellfire.Host(protocol: .https, host: "api.com")
     }
     
-    func testAddHostConfiguration_success() throws {
-        var group = HostGroup(id: "TestGroup", hostConfigurations: [])
-        let host = makeHost(envId: "dev", url: "dev.example.com")
-        
-        try group.add(host)
-        
-        XCTAssertEqual(group.host(for: makeEnvironment("dev")), host)
+    func testInitSetsIdAndEnvironments() throws {
+        let group = HostGroup(id: "DataService", environments: [dev, test])
+        XCTAssertEqual(group.id, "DataService")
     }
     
-    func testAddHostConfiguration_duplicateThrows() {
-        let host = makeHost(envId: "dev", url: "dev.example.com")
-        var group = HostGroup(id: "TestGroup", hostConfigurations: [host])
+    func testMissingConfigurations() throws {
+        let host = Hellfire.Host(protocol: .https, host: "dev.api.com")
+        var group = HostGroup(id: "DataService", environments: [dev, test])
+        try group.add(host, for: dev)
+        XCTAssertEqual(group.missingConfigurations(), [test])
+    }
+    
+    func testAddHostSucceedsWhenEnvironmentIsValid() throws {
+        var group = HostGroup(id: "DataService", environments: [dev, test])
+        try group.add(devHost, for: dev)
         
-        XCTAssertThrowsError(try group.add(host)) { error in
-            guard case HostRepositoryError.hostAlreadyExistsInGroup(let duplicate) = error else {
-                return XCTFail("Unexpected error: \(error)")
+        let retrievedHost = try group.host(for: dev)
+        XCTAssertEqual(retrievedHost, devHost)
+    }
+    
+    func testAddHostThrowsOnInvalidEnvironment() {
+        var group = HostGroup(id: "DataService", environments: [test])
+        XCTAssertThrowsError(try group.add(devHost, for: dev)) { error in
+            guard case HostRepositoryError.invalidEnvironment(let env) = error else {
+                return XCTFail("Expected invalidEnvironment error")
             }
-            XCTAssertEqual(duplicate, host)
+            XCTAssertEqual(env, dev)
         }
     }
     
-    func testRemoveHostConfiguration_success() throws {
-        let host = makeHost(envId: "dev", url: "dev.example.com")
-        var group = HostGroup(id: "TestGroup", hostConfigurations: [host])
-        
-        try group.remove(host)
-        
-        XCTAssertNil(group.host(for: makeEnvironment("dev")))
+    func testHostReturnsNilWhenNotSet() throws {
+        let group = HostGroup(id: "DataService", environments: [dev])
+        let host = try group.host(for: dev)
+        XCTAssertNil(host)
     }
     
-    func testRemoveHostConfiguration_notFoundThrows() {
-        let host = makeHost(envId: "dev", url: "dev.example.com")
-        var group = HostGroup(id: "TestGroup", hostConfigurations: [])
-        
-        XCTAssertThrowsError(try group.remove(host)) { error in
-            guard case HostRepositoryError.hostNotFoundInGroup(let missing) = error else {
-                return XCTFail("Unexpected error: \(error)")
+    func testHostThrowsOnInvalidEnvironment() {
+        let group = HostGroup(id: "DataService", environments: [dev])
+        XCTAssertThrowsError(try group.host(for: prod)) { error in
+            guard case HostRepositoryError.invalidEnvironment(let env) = error else {
+                return XCTFail("Expected invalidEnvironment error")
             }
-            XCTAssertEqual(missing, host)
+            XCTAssertEqual(env, prod)
         }
     }
     
-    func testHostLookup_returnsCorrectConfiguration() {
-        let devHost = makeHost(envId: "dev", url: "dev.example.com")
-        let prodHost = makeHost(envId: "prod", url: "prod.example.com")
+    func testRemoveHostClearsHostForEnvironment() throws {
+        var group = HostGroup(id: "DataService", environments: [dev])
+        try group.add(devHost, for: dev)
+        try group.removeHost(for: dev)
         
-        let group = HostGroup(id: "TestGroup", hostConfigurations: [devHost, prodHost])
-        
-        XCTAssertEqual(group.host(for: makeEnvironment("prod")), prodHost)
-        XCTAssertNil(group.host(for: makeEnvironment("test")))
+        let host = try group.host(for: dev)
+        XCTAssertNil(host)
     }
     
-    func testDebugDescription_containsExpectedText() {
-        let devHost = makeHost(envId: "dev", url: "dev.example.com")
-        let group = HostGroup(id: "ServiceX", hostConfigurations: [devHost])
+    func testRemoveHostThrowsOnInvalidEnvironment() {
+        var group = HostGroup(id: "DataService", environments: [dev])
+        XCTAssertThrowsError(try group.removeHost(for: test)) { error in
+            guard case HostRepositoryError.invalidEnvironment(let env) = error else {
+                return XCTFail("Expected invalidEnvironment error")
+            }
+            XCTAssertEqual(env, test)
+        }
+    }
+    
+    func testDebugDescriptionIncludesIdAndHostPaths() throws {
+        var group = HostGroup(id: "DataService", environments: [dev])
+        try group.add(devHost, for: dev)
         
-        let debugText = group.debugDescription
-        XCTAssertTrue(debugText.contains("HostGroup ID: ServiceX"))
-        XCTAssertTrue(debugText.contains(devHost.fullHostPath))
-        XCTAssertTrue(debugText.contains("[dev]"))
+        let debugOutput = group.debugDescription
+        XCTAssertTrue(debugOutput.contains("HostGroup ID: DataService"))
+        XCTAssertTrue(debugOutput.contains(devHost.fullHostPath))
     }
 }

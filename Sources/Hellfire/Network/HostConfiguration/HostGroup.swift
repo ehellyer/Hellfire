@@ -12,65 +12,91 @@ import Foundation
 /// Each group contains the same logical host (e.g., a service endpoint), but with different settings per environment (e.g., dev, test, production).
 ///
 /// For example, a `HostGroup` for a "DataService" might contain host configurations for dev (`https://dev.api.com`), test (`https://test.api.com`), and production (`https://api.com`).
-public struct HostGroup: Identifiable, Hashable {
+public struct HostGroup: Identifiable, Hashable, JSONSerializable {
     
     // MARK: - Private API
     
     /// Internal list of host configurations associated with this group.
-    private var hostConfigurations: [HostConfiguration] = []
+    private var hostConfigurations: [Environment: Host] = [:]
+
+    /// The list of environments supported by this host group.
+    /// This list determines which environments are valid for host configuration.
+    private var environments: [Environment]
     
     // MARK: - Public API
     
-    /// Initializes a new `HostGroup` with the specified ID and an initial list of host configurations.
+    /// Initializes a new `HostGroup` with a unique identifier and supported environments.
     ///
     /// - Parameters:
-    ///   - id: A unique string identifier for the group (e.g., "DataService").
-    ///   - hostConfigurations: An array of `HostConfiguration` entries for the group.
-    public init(id: String, hostConfigurations: [HostConfiguration]) {
+    ///   - id: The unique identifier for this host group.
+    ///   - environments: The list of supported environments of the app to be used by this host group.
+    public init(id: String, environments: [Environment]) {
         self.id = id
-        self.hostConfigurations = hostConfigurations
+        self.environments = environments
+        self.hostConfigurations = [:]
     }
     
     /// The unique identifier for this host group.
     public var id: String
     
-    /// Adds a new host configuration to the group.
+    /// Adds a `Host` configuration for the specified `Environment`.
     ///
-    /// - Parameter host: The `HostConfiguration` to add.
-    /// - Throws: `HostRepositoryError.hostAlreadyExistsInGroup` if the host configuration already exists in the group.
-    public mutating func add(_ host: HostConfiguration) throws {
-        if hostConfigurations.contains(host) {
-            throw HostRepositoryError.hostAlreadyExistsInGroup(host)
+    /// - Parameters:
+    ///   - host: The host configuration to associate with the environment.
+    ///   - environment: The environment for which to associate the host.
+    /// - Throws: `HostRepositoryError.invalidEnvironment` if the environment is not supported by this group.
+    public mutating func add(_ host: Host, for environment: Environment) throws {
+        guard environments.contains(environment) else {
+            throw HostRepositoryError.invalidEnvironment(environment)
         }
-        self.hostConfigurations.append(host)
+        self.hostConfigurations[environment] = host
     }
     
-    /// Removes an existing host configuration from the group.
+    /// Removes the `Host` configuration associated with the specified `Environment`.
     ///
-    /// - Parameter host: The `HostConfiguration` to remove.
-    /// - Throws: `HostRepositoryError.hostNotFoundInGroup` if the host configuration is not found in the group.
-    public mutating func remove(_ host: HostConfiguration) throws {
-        if !hostConfigurations.contains(host) {
-            throw HostRepositoryError.hostNotFoundInGroup(host)
+    /// - Parameter environment: The environment whose host configuration should be removed.
+    /// - Throws: `HostRepositoryError.invalidEnvironment` if the environment is not supported by this group.
+    public mutating func removeHost(for environment: Environment) throws {
+        guard environments.contains(environment) else {
+            throw HostRepositoryError.invalidEnvironment(environment)
         }
-        self.hostConfigurations.removeAll { $0 == host }
+        hostConfigurations[environment] = nil
     }
     
-    /// Retrieves the host configuration for the specified environment, if one exists.
+    /// Retrieves the `Host` configuration for the specified `Environment`, if one exists.
     ///
-    /// - Parameter environment: The environment to match against (e.g., development, test, production).
-    /// - Returns: The matching `HostConfiguration` or `nil` if not found.
-    public func host(for environment: Environment) -> HostConfiguration? {
-        hostConfigurations.first { $0.environment == environment }
+    /// - Parameter environment: The environment whose host configuration should be retrieved.
+    /// - Returns: The `Host` configuration associated with the given environment, or `nil` if none exists.
+    /// - Throws: `HostRepositoryError.invalidEnvironment` if the environment is not supported by this group.
+    public func host(for environment: Environment) throws -> Host?  {
+        guard environments.contains(environment) else {
+            throw HostRepositoryError.invalidEnvironment(environment)
+        }
+        return hostConfigurations[environment]
+    }
+    
+    /// Returns a list of environments that are declared but do not yet have a host configuration.
+    ///
+    /// This function compares the list of declared `environments` with the set of keys
+    /// in `hostConfigurations`. Any environment that is expected but does not have an
+    /// associated host configuration is considered missing.
+    ///
+    /// - Returns: An array of `Environment` values that are missing host configurations.
+    public func missingConfigurations() -> [Environment] {
+        let configured = Set(self.hostConfigurations.keys)
+        let missing = environments.filter { !configured.contains($0) }
+        return missing
     }
 }
 
 extension HostGroup: CustomDebugStringConvertible {
     
-    /// Returns a debug description of the host group, including its ID and configurations.
+    /// A textual representation of this `HostGroup` for debugging purposes.
+    ///
+    /// Includes the group's ID and a list of configured hosts for each environment.
     public var debugDescription: String {
         let configs = hostConfigurations.map { config in
-            "- [\(config.environment.id)]: \(config.fullHostPath)"
+            "- [\(config.key.id)]: \(config.value.fullHostPath)"
         }.joined(separator: "\n")
         
         return """

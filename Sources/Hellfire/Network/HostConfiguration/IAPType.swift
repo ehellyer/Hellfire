@@ -59,7 +59,4 @@ public enum IAPType: String, JSONSerializable {
     
     /// Secure Shell Protocol
     case ssh = "ssh"
-    
-    /// Other (This option allows the developer to use an alternate IAPType that is not part of this list.  Can be done in code or by find/replace "IAPOther" in a URL string.)
-    case other = "IAPOther"
 }

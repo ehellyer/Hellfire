@@ -19,35 +19,42 @@ final class HostRepositoryTests: XCTestCase {
     }
     
     private func makeEnvironment(_ id: String) -> Environment {
-        Environment(id: id, description: id.capitalized)
+        Environment(id: id,
+                    description: id.capitalized)
     }
     
-    private func makeHost(envId: String, url: String) -> HostConfiguration {
-        HostConfiguration(
-            environment: makeEnvironment(envId),
-            protocol: .https,
-            host: url
-        )
+    private func makeHost(url: String) -> Hellfire.Host {
+        Hellfire.Host(protocol: .https,
+                      host: url)
     }
     
-    private func makeGroup(id: String, hosts: [HostConfiguration]) -> HostGroup {
-        HostGroup(id: id, hostConfigurations: hosts)
+    private func makeGroup(id: String, environments: [Environment]) -> HostGroup {
+        HostGroup(id: id, environments: environments)
     }
     
     func testAddHostGroup_success() throws {
-        var repo = HostRepository()
-        let group = makeGroup(id: "ServiceA", hosts: [makeHost(envId: "dev", url: "dev.com")])
         
+        let env = makeEnvironment("dev")
+        var repo = HostRepository(environments: [env])
+        let host = makeHost(url: "dev.com")
+        var group = makeGroup(id: "ServiceA",
+                              environments: [env])
+        try group.add(host, for: env)
         try repo.add(hostGroup: group)
         
-        let result = try repo.resolveHost(in: makeEnvironment("dev"), for: "ServiceA")
+        let result = try repo.resolveHost(in: "ServiceA", for: env)
         XCTAssertEqual(result.host, "dev.com")
     }
     
-    func testAddHostGroup_duplicateThrows() {
-        let group = makeGroup(id: "ServiceA", hosts: [makeHost(envId: "dev", url: "dev.com")])
-        var repo = HostRepository(hostGroups: [group])
-        
+    func testAddHostGroup_duplicateThrows() throws {
+        let env = makeEnvironment("dev")
+        var repo = HostRepository(environments: [env])
+        let host = makeHost(url: "dev.com")
+        var group = makeGroup(id: "ServiceA",
+                              environments: repo.environments)
+        try group.add(host, for: env)
+        try repo.add(hostGroup: group)
+
         XCTAssertThrowsError(try repo.add(hostGroup: group)) { error in
             guard case HostRepositoryError.hostGroupAlreadyExists(let existing) = error else {
                 return XCTFail("Unexpected error: \(error)")
@@ -57,36 +64,50 @@ final class HostRepositoryTests: XCTestCase {
     }
     
     func testResolveHost_returnsCorrectHost() throws {
-        let devHost = makeHost(envId: "dev", url: "dev.com")
-        let prodHost = makeHost(envId: "prod", url: "prod.com")
-        let group = makeGroup(id: "ServiceA", hosts: [devHost, prodHost])
-        let repo = HostRepository(hostGroups: [group])
         
-        let resolved = try repo.resolveHost(in: makeEnvironment("prod"), for: "ServiceA")
-        XCTAssertEqual(resolved.host, "prod.com")
+        let devEnv = makeEnvironment("dev")
+        let prdEnv = makeEnvironment("prd")
+        let devHost = makeHost(url: "dev.example.com")
+        let prdHost = makeHost(url: "prod.example.com")
+        var repo = HostRepository(environments: [devEnv, prdEnv])
+        var group = makeGroup(id: "ServiceA",
+                              environments: repo.environments)
+        try group.add(devHost, for: devEnv)
+        try group.add(prdHost, for: prdEnv)
+        try repo.add(hostGroup: group)
+
+        
+        let resolved = try repo.resolveHost(in: "ServiceA", for: prdEnv)
+        XCTAssertEqual(resolved.host, "prod.example.com")
     }
     
     func testResolveHost_groupNotFoundThrows() {
-        let repo = HostRepository()
         
-        XCTAssertThrowsError(try repo.resolveHost(in: makeEnvironment("dev"), for: "UnknownGroup")) { error in
+        let devEnv = makeEnvironment("dev")
+        let repo = HostRepository(environments: [devEnv])
+        XCTAssertThrowsError(try repo.resolveHost(in: "FakeGroup", for: devEnv)) { error in
             guard case HostRepositoryError.groupNotFound(let name) = error else {
                 return XCTFail("Unexpected error: \(error)")
             }
-            XCTAssertEqual(name, "UnknownGroup")
+            XCTAssertEqual(name, "FakeGroup")
         }
     }
     
     func testResolveHost_environmentNotFoundThrows() {
-        let devHost = makeHost(envId: "dev", url: "dev.com")
-        let group = makeGroup(id: "ServiceA", hosts: [devHost])
-        let repo = HostRepository(hostGroups: [group])
+        let devEnv = makeEnvironment("dev")
+        let prdEnv = makeEnvironment("prd")
+        let devHost = makeHost(url: "dev.example.com")
+        var repo = HostRepository(environments: [devEnv])
+        var group = makeGroup(id: "ServiceA",
+                              environments: repo.environments)
+        try? group.add(devHost, for: devEnv)
+        try? repo.add(hostGroup: group)
         
-        XCTAssertThrowsError(try repo.resolveHost(in: makeEnvironment("prod"), for: "ServiceA")) { error in
-            guard case HostRepositoryError.groupNotFound(let name) = error else {
+        XCTAssertThrowsError(try repo.resolveHost(in: "ServiceA", for: prdEnv)) { error in
+            guard case HostRepositoryError.invalidEnvironment(let env) = error else {
                 return XCTFail("Unexpected error: \(error)")
             }
-            XCTAssertEqual(name, "ServiceA")
+            XCTAssertEqual(env, prdEnv)
         }
     }
 }

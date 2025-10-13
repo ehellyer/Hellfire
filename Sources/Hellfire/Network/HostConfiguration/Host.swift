@@ -1,5 +1,5 @@
 //
-//  HostConfiguration.swift
+//  Host.swift
 //  HellFire
 //
 //  Created by Ed Hellyer on 5/26/25.
@@ -8,33 +8,27 @@
 
 import Foundation
 
-/// Represents the configuration details for a host in a specific environment, including protocol, host address, port, and relative path.
-/// Useful for constructing fully qualified URLs in a configurable and environment-aware manner.
-public struct HostConfiguration: Codable {
+/// Represents the configuration details for a host, including protocol, host address, port, and relative path.
+/// Useful for constructing fully qualified URLs in a configurable manner.
+public struct Host: JSONSerializable {
     
     /// Initializes a new instance of `HostConfiguration`.
     ///
     /// - Parameters:
-    ///   - environment: The environment in which the host configuration is valid (e.g., development, staging, production).
     ///   - protocol: The network protocol to use (e.g., http, https).
     ///   - host: The host address (e.g., "api.example.com").
     ///   - hostPort: An optional custom port. If nil, the default for the protocol will be used.
     ///   - hostPath: An optional static path component to append to the base URL.
-    public init(environment: Environment,
-                `protocol`: IAPType,
+    public init(`protocol`: IAPType,
                 host: String,
                 hostPort: Int? = nil,
                 hostPath: String? = nil) {
         
-        self.environment = environment
         self.protocol = `protocol`
         self.host = host
         self.hostPort = hostPort
         self.hostPath = hostPath
     }
-    
-    /// The environment for which this configuration is applicable.
-    public var environment: Environment
     
     /// The network protocol to be used (e.g., "http", "https").
     public var `protocol`: IAPType
@@ -61,40 +55,39 @@ public struct HostConfiguration: Codable {
     /// Ensures that a path string has a trailing slash.
     ///
     /// - Parameter pathPart: The input path string.
-    /// - Returns: The path with a trailing slash if it was not already present.
+    /// - Returns: Returns the path with a trailing slash if it was not already present by removing all '/' chars first, then adding one at the end, ensuring any leading chars are also removed.
     private func ensureTrailingSlash(_ pathPart: String) -> String {
-        return pathPart.hasSuffix("/") ? pathPart : pathPart + "/"
+        let _pathPart = pathPart.replacingOccurrences(of: "/", with: "")
+        return _pathPart + "/"
     }
 }
 
-extension HostConfiguration: Hashable {
+extension Host: Hashable {
     
     /// Hashes the essential components of the `HostConfiguration`.
     ///
     /// This enables use in sets or as dictionary keys.
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(environment)
         hasher.combine(`protocol`)
         hasher.combine(host)
         hasher.combine(hostPort ?? -666)
         hasher.combine(hostPath ?? "")
     }
     
-    /// Compares two `HostConfiguration` instances for equality.
+    /// Compares two `Host` instances for equality.
     ///
     /// - Note: Equality is determined based on the computed `hashValue`.
-    public static func == (lhs: HostConfiguration, rhs: HostConfiguration) -> Bool {
+    public static func == (lhs: Host, rhs: Host) -> Bool {
         return lhs.hashValue == rhs.hashValue
     }
 }
 
-extension HostConfiguration: CustomDebugStringConvertible {
+extension Host: CustomDebugStringConvertible {
     
     /// Returns a detailed string representation of the configuration for debugging purposes.
     public var debugDescription: String {
         """
         HostConfiguration(
-            environment: \(environment.id),
             protocol: \(`protocol`),
             host: \(host),
             hostPort: \(hostPort.map { "\($0)" } ?? "nil"),

@@ -8,14 +8,14 @@
 
 /// A repository that manages a collection of `HostGroup`s, allowing resolution of host configurations across multiple environments.
 /// Useful for managing service endpoints in development, staging, and production.
-public struct HostRepository {
+public struct HostRepository: JSONSerializable {
     
-    /// Initializes a new `HostRepository` with an optional list of `HostGroup`s.
-    ///
-    /// - Parameter hostGroups: The initial list of host groups to populate the repository.
-    public init(hostGroups: [HostGroup] = []) {
-        self.hostGroups = hostGroups
+    public init(environments: [Environment]) {
+        self.environments = environments
+        self.hostGroups = []
     }
+    
+    public private(set) var environments: [Environment]
     
     /// Internal collection of host groups.
     private var hostGroups: [HostGroup]
@@ -34,15 +34,26 @@ public struct HostRepository {
     /// Resolves the `HostConfiguration` for a given group name and environment.
     ///
     /// - Parameters:
+    ///   - hostGroupId: The identifier of the host group.
     ///   - environment: The environment for which the host is needed (e.g., dev, test, prod).
-    ///   - groupName: The identifier of the host group.
     /// - Returns: The resolved `HostConfiguration`.
     /// - Throws: `HostRepositoryError.groupNotFound` if the group or environment is not found.
-    public func resolveHost(in environment: Environment, for groupName: String) throws -> HostConfiguration {
-        guard let host = hostGroups.first(where: { $0.id == groupName })?.host(for: environment) else {
-            throw HostRepositoryError.groupNotFound(groupName)
+    public func resolveHost(in hostGroupId: String, for environment: Environment) throws -> Host {
+        guard let hostGroup = hostGroups.first(where: { $0.id == hostGroupId }) else {
+            throw HostRepositoryError.groupNotFound(hostGroupId)
         }
+        
+        guard let host = try hostGroup.host(for: environment) else {
+            throw HostRepositoryError.invalidEnvironment(environment)
+        }
+        
         return host
+    }
+    
+    /// Returns a list of host group identifiers
+    /// - Returns: An array of identifiers used to identify registered host group configurations.
+    public func listHostGroupIds() -> [String] {
+        return hostGroups.map { $0.id }
     }
 }
 
@@ -52,11 +63,14 @@ public enum HostRepositoryError: Swift.Error {
     /// The specified group was not found in the repository.
     case groupNotFound(String)
     
+    /// An invalid `Environment` was passed as a parameter.
+    case invalidEnvironment(Environment)
+    
     /// The specified host configuration already exists within a group.
-    case hostAlreadyExistsInGroup(HostConfiguration)
+    case hostAlreadyExistsInGroup(Host)
     
     /// The specified host configuration could not be found in a group.
-    case hostNotFoundInGroup(HostConfiguration)
+    case hostNotFoundInGroup(Host)
     
     /// The specified host group already exists in the repository.
     case hostGroupAlreadyExists(HostGroup)

@@ -269,6 +269,69 @@ public class SessionInterface: NSObject {
             throw HellfireError.ServiceRequestError.unableToCreateTask(result: RequestResult.failure(serviceError))
         }
     }
+        
+    public func execute<T: JSONSerializable>(_ request: NetworkRequest) async throws -> JSONSerializableResponse<T> {
+        
+        if let cachedResponse = hasCachedResponse(forRequest: request), let jsonObject = try? T.initialize(jsonData: cachedResponse) {
+            let jsonResponse = JSONSerializableResponse(headers: [HTTPHeader(name: "CachedResponse", value: "true")],
+                                                        statusCode: HTTPCode.ok.rawValue,
+                                                        jsonObject: jsonObject)
+            return jsonResponse
+        }
+        
+        let urlRequest = self.urlRequest(fromNetworkRequest: request)
+        let (data, response) = try await self.dataTaskSession.data(for: urlRequest, delegate: self)
+
+        let statusCode = self.statusCodeForResponse(response)
+        let responseHeaders = self.httpHeadersFrom(response)
+        self.sendToDelegate(responseHeaders: responseHeaders, forRequest: request)
+
+        if HTTPCode.isOk(statusCode) {
+            self.diskCache.store(data, for: request)
+        }
+        
+        do {
+            let jsonObject = try T.initialize(jsonData: data)
+            let jsonResponse = JSONSerializableResponse<T>(headers: responseHeaders,
+                                                           statusCode: statusCode,
+                                                           jsonObject: jsonObject)
+            return jsonResponse
+        } catch {
+            
+            let serviceError = self.createServiceError(data: data,
+                                                       statusCode: statusCode,
+                                                       error: error,
+                                                       requestURL: request.url)
+            
+            throw serviceError
+        }
+    }
+    
+    public func execute(_ request: NetworkRequest) async throws -> DataResponse {
+        if let cachedResponse = hasCachedResponse(forRequest: request) {
+            let dataResponse = DataResponse(headers: [HTTPHeader(name: "CachedResponse", value: "true")],
+                                            statusCode: HTTPCode.ok.rawValue,
+                                            body: cachedResponse)
+            return dataResponse
+        }
+        
+        let urlRequest = self.urlRequest(fromNetworkRequest: request)
+        let (data, response) = try await self.dataTaskSession.data(for: urlRequest, delegate: self)
+        
+        let statusCode = self.statusCodeForResponse(response)
+        let responseHeaders = self.httpHeadersFrom(response)
+        self.sendToDelegate(responseHeaders: responseHeaders, forRequest: request)
+        
+        if HTTPCode.isOk(statusCode) {
+            self.diskCache.store(data, for: request)
+        }
+        
+        let dataResponse = DataResponse(headers: responseHeaders,
+                                        statusCode: statusCode,
+                                        body: data)
+        return dataResponse
+    }
+    
     
     /// Executes the network request asynchronously as a [URLSessionDataTask](apple-reference-documentation://ls%2Fdocumentation%2Ffoundation%2FURLSessionDataTask), intended to be a relatively short request.
     ///
