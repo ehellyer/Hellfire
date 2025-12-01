@@ -10,22 +10,72 @@ import Foundation
 
 //MARK: - JSONSerializable protocol Definition
 
-/// Adds functionality to the Codable protocol so that simple or complex structs and/or classes that implement JSONSerializable, can be decoded or encoded with very little effort.
+/// A protocol that extends `Codable` with convenient JSON serialization and deserialization methods.
+///
+/// `JSONSerializable` provides a streamlined interface for encoding and decoding types to and from JSON.
+/// Types conforming to this protocol gain automatic implementations for converting to JSON data, strings,
+/// and dictionary representations with comprehensive error handling.
+///
+///
+/// Conform your types to `JSONSerializable` to gain automatic JSON conversion capabilities:
+///
+/// ```swift
+/// struct User: JSONSerializable {
+///     let id: Int
+///     let name: String
+///     let email: String
+/// }
+///
+/// // Encoding
+/// let user = User(id: 1, name: "John", email: "john@example.com")
+/// let jsonData = try user.toJSONData()
+/// let jsonString = try user.toJSONString()
+///
+/// // Decoding
+/// let decodedUser = try User.initialize(jsonData: jsonData)
+/// ```
 public protocol JSONSerializable: Codable {
     
-    /// Serializes the object into a data stream of the objects JSON representation.  Typically used for data requests or persisting state to some permanent storage.
+    /// Serializes the instance into JSON-encoded data.
+    ///
+    /// This method encodes the instance into a UTF-8 encoded JSON data representation,
+    /// suitable for network requests or persistent storage.
+    ///
+    /// - Returns: The JSON-encoded data representation of the instance.
+    /// - Throws: `JSONSerializableError.encodingError` if encoding fails.
     func toJSONData() throws -> Data
     
-    /// Serializes the object into a JSON string representation.  Typically used for debug or persisting state to some permanent storage.
+    /// Serializes the instance into a JSON string.
+    ///
+    /// This method converts the instance into a human-readable JSON string representation,
+    /// useful for debugging or text-based storage.
+    ///
+    /// - Returns: A UTF-8 encoded JSON string representation of the instance.
+    /// - Throws: `JSONSerializableError.encodingError` if encoding fails.
     func toJSONString() throws -> String
     
-    /// Serializes the object into a of type Dictionary<String, Any>.  Typically used to make our JS friends happy.
+    /// Serializes the instance into a dictionary representation.
+    ///
+    /// This method converts the instance into a `Dictionary<String, Any>`, which can be useful
+    /// for interoperability with JavaScript or other dynamic systems that expect dictionary types.
+    ///
+    /// - Note: This method cannot be used with `Array<JSONSerializable>` types and will throw an error if attempted.
+    /// - Returns: A dictionary representation of the instance.
+    /// - Throws: `JSONSerializableError.encodingError` if the instance is an array, or `JSONSerializableError.decodingError` if conversion fails.
     func toJSONObject() throws -> Dictionary<String, Any>
     
-    /// Initializer for JSONSerializable type.
-    /// - Parameter jsonData: The UTF8 encoded data.
-    /// - Returns: Returns a new instance of the JSONSerializable type.
-    static func initialize(jsonData: Data?) throws -> Self
+    /// Creates a new instance from JSON-encoded data.
+    ///
+    /// This static method decodes JSON data into an instance of the conforming type.
+    /// If `jsonData` is `nil`, it attempts to decode from an empty JSON object (`{}`),
+    /// which succeeds only if all properties have default values or are optional.
+    ///
+    /// - Parameters:
+    ///   - jsonData: The UTF-8 encoded JSON data to decode. If `nil`, attempts to decode from an empty JSON object.
+    ///   - codingUserInfo: A dictionary of user-defined keys and values to provide context for decoding.
+    /// - Returns: A new instance of the conforming type.
+    /// - Throws: `JSONSerializableError.decodingError` if decoding fails due to missing keys, type mismatches, corrupted data, or other errors.
+    static func initialize(jsonData: Data?, codingUserInfo: [CodingUserInfoKey : any Sendable]) throws -> Self
 }
 
 //MARK: - JSONSerializable protocol Implementation
@@ -83,9 +133,14 @@ public extension JSONSerializable {
 
 //MARK: - JSONSerializable Object Initializers
 
-extension JSONSerializable {
+extension JSONSerializable where Self: JSONSerializable {
     
-    public static func initialize(jsonData: Data?) throws -> Self {
+    public static func initialize(jsonData: Data?, codingUserInfo: [CodingUserInfoKey : any Sendable] = [:]) throws -> Self {
+        
+        let decoder = Self.jsonDecoder
+        for key in codingUserInfo.keys {
+            decoder.userInfo[key] = codingUserInfo[key]
+        }
         
         /*
          Nil coalesce to empty representation and let JSONDecoder determine if the definition supports it.
@@ -96,7 +151,7 @@ extension JSONSerializable {
         let modelData = jsonData ?? "{}".data(using: .utf8)!
         
         do {
-            return try Self.jsonDecoder.decode(Self.self, from: modelData)
+            return try decoder.decode(Self.self, from: modelData)
         } catch DecodingError.keyNotFound(let codingKey, let context) {
             let message = "Key not found error decoding instance of `\(Self.typeName)`.\nExpected value for key '\(codingKey.stringValue)'. \nDecoding path: \(Self.debugCodingPath(context.codingPath)) \nError message: \(context.debugDescription)"
             throw JSONSerializableError.decodingError.keyNotFound(message: message)
@@ -115,10 +170,15 @@ extension JSONSerializable {
         }
     }
     
+
     /// Initialize a new instance from a dictionary representation.
     ///
-    /// Returns an empty object if the parameter is nil or is the JSON data representation of an empty object, but only if the model definition supports it.
-    /// - Parameter dictionary: The dictionary representation of the type to be decoded.
+    /// This initializer creates an instance of the conforming type from a dictionary. If the `dictionary` parameter is `nil`,
+    /// it attempts to create an instance from an empty JSON object representation (`{}`). This behavior succeeds only if
+    /// the model definition supports initialization from an empty object (i.e., all properties have default values or are optional).
+    ///
+    /// - Parameter dictionary: The dictionary representation of the type to be decoded. If `nil`, attempts to decode from an empty JSON object.
+    /// - Throws: `JSONSerializableError.decodingError` if the dictionary cannot be serialized to JSON data or if decoding fails.
     public init(dictionary: [String: Any]?) throws {
         if let dictionary {
             let data = try JSONSerialization.data(withJSONObject: dictionary, options: [])
@@ -133,11 +193,24 @@ extension JSONSerializable {
 
 extension Array: JSONSerializable where Element: JSONSerializable {
     
-    /// Initializer for  a new instance of `Array<JSONSerializable>`.
-    /// - Parameter jsonData: The UTF8 encoded data representation of the `Array<JSONSerializable>`.
-    /// - Returns: Returns a new instance of `Array<JSONSerializable>`.
-    public static func initialize(jsonData: Data?) throws -> [Element] {
+    /// Creates a new array instance from JSON-encoded data.
+    ///
+    /// This static method decodes JSON data into an array of elements conforming to `JSONSerializable`.
+    /// If `jsonData` is `nil`, it attempts to decode from an empty JSON array (`[]`), which always
+    /// succeeds and returns an empty array.
+    ///
+    /// - Parameters:
+    ///   - jsonData: The UTF-8 encoded JSON data to decode. If `nil`, attempts to decode from an empty JSON array.
+    ///   - codingUserInfo: A dictionary of user-defined keys and values to provide context for decoding.
+    /// - Returns: A new array of elements decoded from the JSON data.
+    /// - Throws: `JSONSerializableError.decodingError` if decoding fails due to missing keys, type mismatches, corrupted data, or other errors.
+    public static func initialize(jsonData: Data?, codingUserInfo: [CodingUserInfoKey : any Sendable] = [:]) throws -> [Element] {
 
+        let decoder = Element.jsonDecoder
+        for key in codingUserInfo.keys {
+            decoder.userInfo[key] = codingUserInfo[key]
+        }
+        
         /*
          Nil coalesce to empty representation and let JSONDecoder determine if the definition supports it.
          If the model definition does not support empty object, JSONSerializable will throw a decoder
@@ -147,7 +220,7 @@ extension Array: JSONSerializable where Element: JSONSerializable {
         let modelData = jsonData ?? "[]".data(using: .utf8)!
 
         do {
-            return try Element.jsonDecoder.decode([Element].self, from: modelData)
+            return try decoder.decode([Element].self, from: modelData)
         } catch DecodingError.keyNotFound(let codingKey, let context) {
             let message = "Key not found error decoding instance of `\(Self.typeName)`.\nExpected value for key '\(codingKey.stringValue)'.\nDecoding path: \(Self.debugCodingPath(context.codingPath))\nError message: \(context.debugDescription)"
             throw JSONSerializableError.decodingError.keyNotFound(message: message)
@@ -206,6 +279,7 @@ extension JSONSerializable {
         return debugString
     }
 
+    
     fileprivate static var jsonEncoder: JSONEncoder {
         let jsonEncoder = JSONEncoder()
         jsonEncoder.dateEncodingStrategy = .formatted(ISO8601DateFormatter.dateFormatter)
