@@ -29,11 +29,13 @@ public class SessionInterface: NSObject {
     
     public required override init() {
         self.backgroundSessionIdentifier = "Hellfire.BackgroundUrlSession"
+        self.defaultRequestHeaders = [HTTPHeader.defaultUserAgent].headers
         super.init()
     }
     
     public required init(backgroundSessionIdentifier: String) {
         self.backgroundSessionIdentifier = backgroundSessionIdentifier
+        self.defaultRequestHeaders = [HTTPHeader.defaultUserAgent].headers
         super.init()
     }
     
@@ -84,9 +86,7 @@ public class SessionInterface: NSObject {
         return urlSession
     }()
     
-    private lazy var defaultRequestHeaders: [AnyHashable: Any] = {
-        return [HTTPHeader.defaultUserAgent].headers
-    }()
+    private var defaultRequestHeaders: [AnyHashable: Any]
     
     //MARK: - Private Func API
     
@@ -230,7 +230,7 @@ public class SessionInterface: NSObject {
     /// A protocol this is implemented optionally by the SessionInterface delegate.
     public weak var sessionDelegate: HellfireSessionDelegate?
     
-    //MARK: - Public Func API
+    //MARK: - Public API Upload
     
     /// Executes the `MultipartRequest` request asynchronously as a [URLSessionUploadTask](apple-reference-documentation://ls%2Fdocumentation%2Ffoundation%2FURLSessionUploadTask).
     ///
@@ -269,7 +269,36 @@ public class SessionInterface: NSObject {
             throw HellfireError.ServiceRequestError.unableToCreateTask(result: RequestResult.failure(serviceError))
         }
     }
+    
+    //MARK: - Public API Async/Await Data fetch
+    
+    public func execute(_ request: NetworkRequest) async throws -> DataResponse {
+        if let cachedResponse = hasCachedResponse(forRequest: request) {
+            let dataResponse = DataResponse(headers: [HTTPHeader(name: "CachedResponse", value: "true")],
+                                            statusCode: HTTPCode.ok.rawValue,
+                                            body: cachedResponse)
+            return dataResponse
+        }
         
+        let urlRequest = self.urlRequest(fromNetworkRequest: request)
+        let (data, response) = try await self.dataTaskSession.data(for: urlRequest, delegate: self)
+        
+        let statusCode = self.statusCodeForResponse(response)
+        let responseHeaders = self.httpHeadersFrom(response)
+        self.sendToDelegate(responseHeaders: responseHeaders, forRequest: request)
+        
+        if HTTPCode.isOk(statusCode) {
+            self.diskCache.store(data, for: request)
+        }
+        
+        let dataResponse = DataResponse(headers: responseHeaders,
+                                        statusCode: statusCode,
+                                        body: data)
+        return dataResponse
+    }
+    
+    //MARK: - Public API Async/Await JSONSerializable fetch
+    
     public func execute<T: JSONSerializable>(_ request: NetworkRequest) async throws -> JSONSerializableResponse<T> {
         
         if let cachedResponse = hasCachedResponse(forRequest: request), let jsonObject = try? T.initialize(jsonData: cachedResponse) {
@@ -306,32 +335,8 @@ public class SessionInterface: NSObject {
             throw serviceError
         }
     }
-    
-    public func execute(_ request: NetworkRequest) async throws -> DataResponse {
-        if let cachedResponse = hasCachedResponse(forRequest: request) {
-            let dataResponse = DataResponse(headers: [HTTPHeader(name: "CachedResponse", value: "true")],
-                                            statusCode: HTTPCode.ok.rawValue,
-                                            body: cachedResponse)
-            return dataResponse
-        }
-        
-        let urlRequest = self.urlRequest(fromNetworkRequest: request)
-        let (data, response) = try await self.dataTaskSession.data(for: urlRequest, delegate: self)
-        
-        let statusCode = self.statusCodeForResponse(response)
-        let responseHeaders = self.httpHeadersFrom(response)
-        self.sendToDelegate(responseHeaders: responseHeaders, forRequest: request)
-        
-        if HTTPCode.isOk(statusCode) {
-            self.diskCache.store(data, for: request)
-        }
-        
-        let dataResponse = DataResponse(headers: responseHeaders,
-                                        statusCode: statusCode,
-                                        body: data)
-        return dataResponse
-    }
-    
+
+    //MARK: - Public API Async/Completion block Data fetch
     
     /// Executes the network request asynchronously as a [URLSessionDataTask](apple-reference-documentation://ls%2Fdocumentation%2Ffoundation%2FURLSessionDataTask), intended to be a relatively short request.
     ///
@@ -371,6 +376,8 @@ public class SessionInterface: NSObject {
         task.resume()
         return taskIdentifier
     }
+    
+    //MARK: - Public API Async/Completion block JSONSerializable fetch
     
     /// Executes the network request asynchronously as a [URLSessionDataTask](apple-reference-documentation://ls%2Fdocumentation%2Ffoundation%2FURLSessionDataTask), intended to be a relatively short request.
     ///
@@ -412,7 +419,8 @@ public class SessionInterface: NSObject {
         return  requestItem.requestIdentifier
     }
     
-        
+    //MARK: - Public API Control Functions
+    
     /// Gets all the tasks currently running on the background session.
     /// - Parameter completion: Returns a tuple of three arrays via an asynchronous completion block. ([URLSessionDataTask], [URLSessionUploadTask], [URLSessionDownloadTask])
     public func getBackgroundTasks(completion: @escaping ([URLSessionDataTask], [URLSessionUploadTask], [URLSessionDownloadTask]) -> Void) {
